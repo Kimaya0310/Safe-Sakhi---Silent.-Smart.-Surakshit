@@ -1,0 +1,155 @@
+
+'use client';
+import { Logo } from '@/components/logo';
+import { useAuth } from '@/context/auth-provider';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import {
+  Home,
+  LogOut,
+  PanelLeft,
+  Settings,
+  ShieldAlert,
+  Siren,
+  User,
+  Activity,
+  UserCheck,
+  Building
+} from 'lucide-react';
+import React from 'react';
+import { AppStateProvider } from '@/context/app-state-provider';
+import { useRouter } from 'next/navigation';
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!user) {
+      router.push('/');
+    }
+  }, [user, router]);
+  
+  if (!user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('');
+  }
+
+  const navItems = {
+    passenger: [
+      { icon: Home, label: 'Home', href: '/dashboard' },
+      { icon: Activity, label: 'Ride History', href: '#' },
+      { icon: UserCheck, label: 'Emergency Contacts', href: '#' },
+      { icon: Settings, label: 'Settings', href: '#' },
+    ],
+    responder: [
+      { icon: Siren, label: 'Active Alerts', href: '/dashboard' },
+      { icon: Activity, label: 'Past Incidents', href: '#' },
+      { icon: Settings, label: 'Settings', href: '#' },
+    ],
+    authority: [
+      { icon: ShieldAlert, label: 'Emergency Cases', href: '/dashboard' },
+      { icon: Building, label: 'Organizations', href: '#' },
+      { icon: Settings, label: 'Settings', href: '#' },
+    ]
+  }
+
+  return (
+    <AppStateProvider>
+      <div className="flex min-h-screen w-full bg-muted/40">
+        <aside className={`relative z-10 flex-col border-r bg-card transition-all duration-300 ${isSidebarOpen ? 'flex w-64' : 'hidden w-0 md:flex md:w-16'}`}>
+          <div className="flex h-16 items-center border-b px-6 shrink-0">
+             <div className={`transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'md:opacity-0 md:w-0'}`}>
+                <Logo />
+             </div>
+             <ShieldCheck className={`transition-all duration-300 ${!isSidebarOpen ? 'h-6 w-6' : 'md:hidden'}`} />
+          </div>
+          <nav className="flex-1 overflow-auto py-4">
+            <ul className="grid gap-2 px-4">
+              {(navItems[user.role] || []).map(item => (
+                <li key={item.label}>
+                   <Button variant="ghost" className="w-full justify-start gap-2">
+                      <item.icon className="h-4 w-4" />
+                      <span className={`${isSidebarOpen ? 'inline' : 'md:hidden'}`}>{item.label}</span>
+                   </Button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+        <div className="flex flex-1 flex-col">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:px-6">
+            <Button size="icon" variant="outline" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0">
+              <PanelLeft className="h-5 w-5" />
+              <span className="sr-only">Toggle sidebar</span>
+            </Button>
+            <div className="flex items-center gap-4">
+               <span className="text-sm font-medium text-muted-foreground">{user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person face" />
+                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto p-4 sm:p-6">
+            {children}
+          </main>
+        </div>
+      </div>
+    </AppStateProvider>
+  );
+}

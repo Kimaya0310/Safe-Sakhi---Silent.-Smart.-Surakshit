@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/auth/login-form';
+import { SignupForm } from '@/components/auth/signup-form';
 import { Logo } from '@/components/logo';
 import {
   Card,
@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -17,13 +17,13 @@ export default function LoginPage() {
             <div className="mx-auto mb-4">
               <Logo />
             </div>
-            <CardTitle className="font-headline text-3xl">Welcome Back</CardTitle>
+            <CardTitle className="font-headline text-3xl">Create an Account</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account.
+              Join Safe Sakhi to ensure your rides are safe and secure.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <LoginForm />
+            <SignupForm />
           </CardContent>
         </Card>
       </div>
