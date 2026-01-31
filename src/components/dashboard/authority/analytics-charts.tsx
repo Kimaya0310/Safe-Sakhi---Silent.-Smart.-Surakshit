@@ -36,10 +36,10 @@ export default function AnalyticsCharts() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-64">
-            <BarChart data={timeData}>
+            <BarChart data={timeData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="time" tickLine={false} tickMargin={10} axisLine={false} />
-              <YAxis />
+              <YAxis tickLine={false} axisLine={false} tickMargin={5} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="alerts" fill="var(--color-alerts)" radius={4} />
             </BarChart>
