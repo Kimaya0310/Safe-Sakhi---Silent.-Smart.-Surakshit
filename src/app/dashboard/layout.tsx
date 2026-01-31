@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Home,
   LogOut,
@@ -30,7 +30,10 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { AppStateProvider } from '@/context/app-state-provider';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { getInitials } from '@/lib/utils';
 
 export default function DashboardLayout({
   children,
@@ -39,6 +42,7 @@ export default function DashboardLayout({
 }) {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   React.useEffect(() => {
@@ -55,26 +59,22 @@ export default function DashboardLayout({
     );
   }
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('');
-  }
-
   const navItems = {
     passenger: [
       { icon: Home, label: 'Home', href: '/dashboard' },
-      { icon: Activity, label: 'Ride History', href: '#' },
-      { icon: UserCheck, label: 'Emergency Contacts', href: '#' },
-      { icon: Settings, label: 'Settings', href: '#' },
+      { icon: Activity, label: 'Ride History', href: '/dashboard/ride-history' },
+      { icon: UserCheck, label: 'Emergency Contacts', href: '/dashboard/emergency-contacts' },
+      { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     ],
     responder: [
       { icon: Siren, label: 'Active Alerts', href: '/dashboard' },
-      { icon: Activity, label: 'Past Incidents', href: '#' },
-      { icon: Settings, label: 'Settings', href: '#' },
+      { icon: Activity, label: 'Past Incidents', href: '/dashboard/past-incidents' },
+      { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     ],
     authority: [
       { icon: ShieldAlert, label: 'Emergency Cases', href: '/dashboard' },
-      { icon: Building, label: 'Organizations', href: '#' },
-      { icon: Settings, label: 'Settings', href: '#' },
+      { icon: Building, label: 'Organizations', href: '/dashboard/organizations' },
+      { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     ]
   }
 
@@ -82,7 +82,7 @@ export default function DashboardLayout({
     <AppStateProvider>
       <div className="flex min-h-screen w-full bg-muted/40">
         <aside className={`relative z-10 flex-col border-r bg-card transition-all duration-300 ${isSidebarOpen ? 'flex w-64' : 'hidden w-0 md:flex md:w-16'}`}>
-          <div className="flex h-16 items-center border-b px-6 shrink-0">
+          <div className="flex h-16 shrink-0 items-center border-b px-6">
              <div className={`transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'md:opacity-0 md:w-0'}`}>
                 <Logo />
              </div>
@@ -92,10 +92,16 @@ export default function DashboardLayout({
             <ul className="grid gap-2 px-4">
               {(navItems[user.role] || []).map(item => (
                 <li key={item.label}>
-                   <Button variant="ghost" className="w-full justify-start gap-2">
+                   <Link
+                      href={item.href}
+                      className={cn(
+                        buttonVariants({ variant: pathname === item.href ? 'secondary' : 'ghost' }),
+                        'w-full justify-start gap-2'
+                      )}
+                   >
                       <item.icon className="h-4 w-4" />
                       <span className={`${isSidebarOpen ? 'inline' : 'md:hidden'}`}>{item.label}</span>
-                   </Button>
+                   </Link>
                 </li>
               ))}
             </ul>
@@ -128,11 +134,11 @@ export default function DashboardLayout({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
