@@ -7,15 +7,18 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/auth-provider';
 import { UserPlus, Trash2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { EmergencyContact, GuardianVerificationLevel } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 export default function EmergencyContactsPage() {
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
-  const [contacts, setContacts] = useState<string[]>(user?.emergencyContacts || []);
+  const [contacts, setContacts] = useState<EmergencyContact[]>(user?.emergencyContacts || []);
 
-  const handleContactChange = (index: number, value: string) => {
+  const handleContactChange = (index: number, field: 'phone' | 'level', value: string) => {
     const newContacts = [...contacts];
-    newContacts[index] = value;
+    newContacts[index] = { ...newContacts[index], [field]: value };
     setContacts(newContacts);
   };
 
@@ -28,7 +31,7 @@ export default function EmergencyContactsPage() {
         })
         return;
     }
-    setContacts([...contacts, '']);
+    setContacts([...contacts, { phone: '', level: 'secondary' }]);
   };
 
   const removeContact = (index: number) => {
@@ -38,7 +41,7 @@ export default function EmergencyContactsPage() {
   
   const saveContacts = () => {
     if (!user) return;
-    const validContacts = contacts.filter(c => c.trim() !== '');
+    const validContacts = contacts.filter(c => c.phone.trim() !== '');
     if (validContacts.length !== contacts.length) {
         toast({
             variant: "destructive",
@@ -59,19 +62,42 @@ export default function EmergencyContactsPage() {
     <Card className="mx-auto max-w-2xl">
       <CardHeader>
         <CardTitle>Emergency Contacts</CardTitle>
-        <CardDescription>Your trusted contacts who will be notified in case of an emergency.</CardDescription>
+        <CardDescription>
+            Your trusted contacts (guardians) who will be notified in case of an emergency. 
+            Primary guardians are contacted first.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {contacts.map((contact, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <Input 
-              type="tel" 
-              value={contact}
-              onChange={(e) => handleContactChange(index, e.target.value)}
-              placeholder="Enter phone number" 
-              className="flex-grow"
-            />
-            <Button variant="ghost" size="icon" onClick={() => removeContact(index)}>
+          <div key={index} className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 rounded-md border p-4">
+            <div className="md:col-span-2 space-y-2">
+                <Label htmlFor={`phone-${index}`}>Phone Number</Label>
+                <Input 
+                  id={`phone-${index}`}
+                  type="tel" 
+                  value={contact.phone}
+                  onChange={(e) => handleContactChange(index, 'phone', e.target.value)}
+                  placeholder="Enter phone number" 
+                  className="flex-grow"
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor={`level-${index}`}>Guardian Level</Label>
+                <Select
+                    value={contact.level}
+                    onValueChange={(value) => handleContactChange(index, 'level', value as GuardianVerificationLevel)}
+                >
+                    <SelectTrigger id={`level-${index}`}>
+                        <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="primary">Primary</SelectItem>
+                        <SelectItem value="secondary">Secondary</SelectItem>
+                        <SelectItem value="emergency_professional">Professional</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+             <Button variant="ghost" size="icon" className="md:col-span-3 justify-self-end" onClick={() => removeContact(index)}>
               <Trash2 className="h-4 w-4 text-destructive"/>
             </Button>
           </div>

@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight, ShieldHalf } from 'lucide-react';
 import { useAuth } from '@/context/auth-provider';
+import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
 
 const formSchema = z.object({
   startLocation: z.string().min(3, 'Please enter a valid start location.'),
@@ -16,11 +18,12 @@ const formSchema = z.object({
 });
 
 interface StartRideFormProps {
-  onStartRide: (startLocation: string, destination: string) => void;
+  onStartRide: (startLocation: string, destination: string, isFeelingUnsafe: boolean) => void;
 }
 
 export default function StartRideForm({ onStartRide }: StartRideFormProps) {
   const { user } = useAuth();
+  const [isFeelingUnsafe, setIsFeelingUnsafe] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -30,7 +33,7 @@ export default function StartRideForm({ onStartRide }: StartRideFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    onStartRide(values.startLocation, values.destination);
+    onStartRide(values.startLocation, values.destination, isFeelingUnsafe);
   }
 
   return (
@@ -79,6 +82,21 @@ export default function StartRideForm({ onStartRide }: StartRideFormProps) {
                   </FormItem>
                 )}
               />
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <FormLabel className="flex items-center gap-2">
+                    <ShieldHalf className="h-4 w-4 text-yellow-600"/>
+                    Pre-ride Anxiety Mode
+                  </FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Feeling anxious? Lower the alert thresholds for this ride.
+                  </p>
+                </div>
+                 <Switch
+                    checked={isFeelingUnsafe}
+                    onCheckedChange={setIsFeelingUnsafe}
+                 />
+              </div>
             </CardContent>
             <CardFooter>
               <Button type="submit" className="w-full">

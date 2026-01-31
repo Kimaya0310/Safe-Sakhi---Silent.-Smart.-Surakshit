@@ -7,7 +7,7 @@ import { mockRides, mockAlerts, mockUsers } from '@/lib/data';
 interface AppStateContextType {
   rides: Ride[];
   alerts: Alert[];
-  startRide: (startLocation: string, destination: string) => Ride;
+  startRide: (startLocation: string, destination: string, initialRiskScore?: number) => Ride;
   updateRide: (updatedRide: Ride) => void;
   endRide: (rideId: string) => void;
   createAlert: (ride: Ride) => void;
@@ -20,7 +20,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [rides, setRides] = useState<Ride[]>(mockRides);
   const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
 
-  const startRide = useCallback((startLocation: string, destination: string): Ride => {
+  const startRide = useCallback((startLocation: string, destination: string, initialRiskScore: number = 0): Ride => {
     const newRide: Ride = {
       rideId: `ride_${Date.now()}`,
       passengerId: 'user_passenger_1',
@@ -28,7 +28,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       destination,
       status: 'active',
       startTime: new Date(),
-      riskScore: 0,
+      riskScore: initialRiskScore,
       riskEvents: [],
       deviceStatus: 'online',
       lastHeartbeat: new Date(),

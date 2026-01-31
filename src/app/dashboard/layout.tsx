@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   LineChart,
   FileClock,
+  SlidersHorizontal,
 } from 'lucide-react';
 import React from 'react';
 import { AppStateProvider } from '@/context/app-state-provider';
@@ -83,6 +84,7 @@ export default function DashboardLayout({
     admin: [
         { icon: LineChart, label: 'Analytics', href: '/dashboard/analytics' },
         { icon: FileClock, label: 'Audit Log', href: '/dashboard/audit-log' },
+        { icon: SlidersHorizontal, label: 'System Config', href: '/dashboard/system-config' },
     ]
   }
 

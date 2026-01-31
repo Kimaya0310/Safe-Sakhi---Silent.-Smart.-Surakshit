@@ -7,6 +7,7 @@ import Link from 'next/link';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -140,8 +141,11 @@ export function SignupForm() {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    Consent to Monitoring
+                    Consent to Monitoring & Legal Token
                   </FormLabel>
+                   <FormDescription>
+                    I consent to ride monitoring and the creation of a secure, auditable consent token for this session.
+                  </FormDescription>
                   <FormMessage />
                 </div>
               </FormItem>

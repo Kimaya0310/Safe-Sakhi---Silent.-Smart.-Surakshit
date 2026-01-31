@@ -4,7 +4,7 @@ import React from 'react';
 import type { Ride } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Clock, MapPin, AlertTriangle, Route } from 'lucide-react';
+import { CheckCircle, Clock, MapPin, AlertTriangle, LifeBuoy, BookUser, ShieldQuestion } from 'lucide-react';
 import SuggestRouteCard from './suggest-route-card';
 
 interface RideSummaryViewProps {
@@ -15,6 +15,8 @@ interface RideSummaryViewProps {
 export default function RideSummaryView({ ride, onNewRide }: RideSummaryViewProps) {
   const duration = ride.startTime && ride.endTime ? 
     Math.round((ride.endTime.getTime() - ride.startTime.getTime()) / 60000) : 0;
+  
+  const wasHighRisk = ride.riskScore > 50 || ride.status === 'emergency';
 
   return (
     <div className="flex flex-col items-center justify-center space-y-6">
@@ -61,6 +63,30 @@ export default function RideSummaryView({ ride, onNewRide }: RideSummaryViewProp
         </CardFooter>
       </Card>
       
+      {wasHighRisk && (
+        <Card className="w-full max-w-2xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <LifeBuoy className="h-5 w-5 text-primary" />
+              Post-Incident Support
+            </CardTitle>
+            <CardDescription>
+              We're here to help. Here are some resources that might be useful.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            <Button variant="outline" className="justify-start">
+              <BookUser className="mr-2" />
+              Contact a Support Counselor
+            </Button>
+            <Button variant="outline" className="justify-start">
+              <ShieldQuestion className="mr-2" />
+              Get Legal Assistance Information
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="w-full max-w-2xl">
         <SuggestRouteCard ride={ride} />
       </div>

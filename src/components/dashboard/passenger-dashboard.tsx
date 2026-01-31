@@ -14,8 +14,9 @@ export default function PassengerDashboard() {
   const [currentRide, setCurrentRide] = useState<Ride | null>(null);
   const { startRide, endRide: appEndRide } = useAppState();
 
-  const handleStartRide = (startLocation: string, destination: string) => {
-    const newRide = startRide(startLocation, destination);
+  const handleStartRide = (startLocation: string, destination: string, isFeelingUnsafe: boolean) => {
+    const initialRiskScore = isFeelingUnsafe ? 20 : 0;
+    const newRide = startRide(startLocation, destination, initialRiskScore);
     setCurrentRide(newRide);
     setRideState('active');
   };

@@ -6,7 +6,7 @@ import { useAppState } from '@/context/app-state-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, MapPin, Shield, ShieldCheck, ShieldAlert, PhoneOff } from 'lucide-react';
+import { AlertTriangle, MapPin, Shield, ShieldCheck, ShieldAlert, PhoneOff, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import placeholderData from '@/lib/placeholder-images.json';
@@ -95,9 +95,10 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   }, [ride, updateRide]);
 
   const handleSafeConfirmation = () => {
+    // Confidence-weighted confirmation: doesn't fully reset risk
     setRide(currentRide => ({
         ...currentRide,
-        riskScore: Math.max(0, currentRide.riskScore - 20)
+        riskScore: Math.max(0, currentRide.riskScore - 15)
     }));
     setShowDeviationAlert(false);
   };
@@ -143,8 +144,18 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
         <div className="lg:col-span-2">
           <Card className="h-full shadow-lg">
             <CardHeader>
-                  <CardTitle className="font-headline text-2xl">Live Ride Status</CardTitle>
-                  <CardDescription>Your journey is being silently monitored for your safety.</CardDescription>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="font-headline text-2xl">Live Ride Status</CardTitle>
+                        <CardDescription>Your journey is being silently monitored for your safety.</CardDescription>
+                    </div>
+                    {ride.status === 'emergency' && (
+                        <Badge variant="outline" className="border-blue-500 text-blue-600 animate-pulse">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Responders Notified
+                        </Badge>
+                    )}
+                </div>
             </CardHeader>
             <CardContent>
               {mapPlaceholder && (

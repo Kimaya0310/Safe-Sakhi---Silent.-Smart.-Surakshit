@@ -2,13 +2,20 @@
 
 export type UserRole = 'passenger' | 'responder' | 'authority' | 'admin';
 
+export type GuardianVerificationLevel = 'primary' | 'secondary' | 'emergency_professional';
+
+export type EmergencyContact = {
+  phone: string;
+  level: GuardianVerificationLevel;
+};
+
 export type User = {
   id: string;
   name: string;
   email: string;
   role: UserRole;
   phone?: string;
-  emergencyContacts?: string[];
+  emergencyContacts?: EmergencyContact[];
   organization?: string;
   verified?: boolean;
   avatarUrl: string;
@@ -104,3 +111,29 @@ export type GestureLog = {
   timestamp: Date;
   escalationTriggered: boolean;
 }
+
+export type IncidentLedger = {
+  recordId: string;
+  rideId: string;
+  eventHash: string;
+  eventType: string;
+  timestamp: Date;
+  previousHash: string;
+};
+
+export type ConsentToken = {
+  rideId: string;
+  consentHash: string;
+  timestamp: Date;
+};
+
+export type GuardianProfile = {
+  userId: string;
+  verificationLevel: GuardianVerificationLevel;
+};
+
+export type SystemConfig = {
+  region: string;
+  escalationThresholds: Record<string, number>;
+  samplingRates: Record<string, number>;
+};

@@ -10,7 +10,10 @@ export const mockUsers: User[] = [
     email: 'passenger@example.com',
     role: 'passenger',
     phone: '9876543210',
-    emergencyContacts: ['9876543211', '9876543212'],
+    emergencyContacts: [
+      { phone: '9876543211', level: 'primary' }, 
+      { phone: '9876543212', level: 'secondary' }
+    ],
     avatarUrl: placeholderImages.find(p => p.id === 'user-avatar-1')?.imageUrl || '',
   },
   {
@@ -170,4 +173,5 @@ export const mockAuditLogs: AuditLog[] = [
     { logId: 'log3', eventType: 'Case Status Update', userId: 'user_authority_1', userRole: 'authority', timestamp: new Date(now.getTime() - 30 * 60000), metadata: { alertId: 'alert_2', newStatus: 'acknowledged' } },
     { logId: 'log4', eventType: 'Manual Escalation', userId: 'user_authority_1', userRole: 'authority', timestamp: new Date(now.getTime() - 10 * 60000), metadata: { rideId: 'ride_emergency_1', newRisk: 95 } },
     { logId: 'log5', eventType: 'Evidence Export', userId: 'user_authority_1', userRole: 'authority', timestamp: new Date(), metadata: { alertId: 'alert_3' } },
+    { logId: 'log6', eventType: 'Gesture SOS Trigger', userId: 'user_passenger_1', userRole: 'passenger', timestamp: new Date(now.getTime() - 2 * 60000), metadata: { alertId: 'alert_6', rideId: 'ride_emergency_6' } },
 ];
