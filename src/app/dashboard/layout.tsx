@@ -1,4 +1,3 @@
-
 'use client';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/context/auth-provider';
@@ -26,7 +25,8 @@ import {
   User,
   Activity,
   UserCheck,
-  Building
+  Building,
+  ShieldCheck,
 } from 'lucide-react';
 import React from 'react';
 import { AppStateProvider } from '@/context/app-state-provider';
