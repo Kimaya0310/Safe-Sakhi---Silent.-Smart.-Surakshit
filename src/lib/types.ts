@@ -23,6 +23,9 @@ export type Ride = {
   riskScore: number;
   riskEvents: RiskEvent[];
   pastRouteData?: string;
+  deviceStatus?: 'online' | 'offline' | 'poweredOff';
+  lastHeartbeat?: Date;
+  tamperingFlag?: boolean;
 };
 
 export type RiskEvent = {
@@ -41,4 +44,22 @@ export type Alert = {
   riskScore: number;
   triggeredAt: Date;
   status: 'active' | 'acknowledged' | 'resolved';
+  triggerReason?: string;
+  deviceInfoSnapshot?: Record<string, any>;
+};
+
+export type DeviceLog = {
+    rideId: string;
+    deviceStatus: 'online' | 'offline' | 'poweredOff';
+    simStatus: string;
+    networkStatus: string;
+    timestamp: Date;
+};
+
+export type OfflineMessage = {
+    senderId: string;
+    receiverId: string;
+    message: string;
+    synced: boolean;
+    timestamp: Date;
 };

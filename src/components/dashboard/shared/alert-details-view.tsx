@@ -3,7 +3,7 @@
 import type { Alert } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info } from 'lucide-react';
 import Image from 'next/image';
 import placeholderData from '@/lib/placeholder-images.json';
 import { useAuth } from '@/context/auth-provider';
@@ -80,6 +80,12 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                     <ShieldAlert className="h-4 w-4 text-muted-foreground" />
                      <span>Risk Score: <Badge variant="destructive">{alert.riskScore}</Badge></span>
                 </div>
+                {alert.triggerReason && (
+                  <div className="flex items-center gap-3">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      <span>Reason: <span className="font-medium">{alert.triggerReason}</span></span>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                     <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
@@ -89,7 +95,20 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                 </div>
             </CardContent>
           </Card>
-           {user?.role === 'authority' && <SummarizeRideCard ride={alert.ride} />}
+           {user?.role === 'authority' && isAuthority && <SummarizeRideCard ride={alert.ride} />}
+           {isAuthority && alert.deviceInfoSnapshot && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Device Info</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-1">
+                  <p><strong>OS:</strong> {alert.deviceInfoSnapshot.os}</p>
+                  <p><strong>App Version:</strong> {alert.deviceInfoSnapshot.appVersion}</p>
+                  <p><strong>Network:</strong> {alert.deviceInfoSnapshot.network}</p>
+                  <p><strong>SIM Status:</strong> {alert.deviceInfoSnapshot.simStatus}</p>
+                </CardContent>
+              </Card>
+           )}
            {alert.status !== 'resolved' && (
                <Button onClick={handleResolve} className="w-full">
                   Mark as Resolved

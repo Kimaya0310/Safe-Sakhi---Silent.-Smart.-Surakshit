@@ -22,6 +22,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import FakeCallOptions from './fake-call-options';
+import FakeCallView from './fake-call-view';
 
 interface LiveRideViewProps {
   ride: Ride;
@@ -32,7 +34,8 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   const [ride, setRide] = useState<Ride>(initialRide);
   const [progress, setProgress] = useState(5);
   const { updateRide } = useAppState();
-  const isInitialMount = useRef(true);
+  const [showDeviationAlert, setShowDeviationAlert] = useState(false);
+  const [fakeCall, setFakeCall] = useState<{name: string, type: 'Family' | 'Friend' | 'Authority'} | null>(null);
 
   const mapPlaceholder = placeholderData.placeholderImages.find(p => p.id === 'map-placeholder');
 
@@ -47,24 +50,28 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
 
         // Simulate random events
         if (Math.random() < 0.1) {
-            const eventType = Math.random() < 0.5 ? 'deviation' : 'stop';
+            const eventType = Math.random() > 0.3 ? 'deviation' : 'stop';
             const severity = Math.floor(Math.random() * 3) + 1;
             newRiskScore += severity * 5;
+            const eventDescription = `${eventType.charAt(0).toUpperCase() + eventType.slice(1)} detected.`;
             newRiskEvents.push({
                 id: `re_${Date.now()}`,
                 rideId: currentRide.rideId,
                 eventType,
                 severity,
                 timestamp: new Date(),
-                description: `${eventType.charAt(0).toUpperCase() + eventType.slice(1)} detected.`,
+                description: eventDescription,
             });
+            if (eventType === 'deviation') {
+                setShowDeviationAlert(true);
+            }
         }
         
         // Decay risk score
         newRiskScore = Math.max(0, newRiskScore - 1);
         
         if (newRiskScore > 60) newStatus = 'emergency';
-        else if (newRiskScore > 30) newStatus = 'active'; // could be 'monitoring'
+        else if (newRiskScore > 30) newStatus = 'active';
         else newStatus = 'active';
 
         const updatedRide: Ride = {
@@ -72,6 +79,7 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
             riskScore: Math.round(newRiskScore),
             status: newStatus,
             riskEvents: newRiskEvents,
+            lastHeartbeat: new Date(),
         };
 
         return updatedRide;
@@ -83,12 +91,32 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   }, []);
 
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    } else {
-      updateRide(ride);
-    }
+    updateRide(ride);
   }, [ride, updateRide]);
+
+  const handleSafeConfirmation = () => {
+    setRide(currentRide => ({
+        ...currentRide,
+        riskScore: Math.max(0, currentRide.riskScore - 20)
+    }));
+    setShowDeviationAlert(false);
+  };
+
+  const handleUnsafeConfirmation = () => {
+      setRide(currentRide => ({
+        ...currentRide,
+        riskScore: currentRide.riskScore + 20,
+      }));
+      setShowDeviationAlert(false);
+  };
+
+  const handleSelectFakeCall = (callerName: string, callerType: 'Family' | 'Friend' | 'Authority') => {
+    setFakeCall({ name: callerName, type: callerType });
+  };
+
+  const handleEndFakeCall = () => {
+    setFakeCall(null);
+  };
 
   const getStatusInfo = () => {
     if (ride.status === 'emergency') {
@@ -103,98 +131,131 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   const statusInfo = getStatusInfo();
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-2">
-        <Card className="h-full shadow-lg">
-           <CardHeader>
-                <CardTitle className="font-headline text-2xl">Live Ride Status</CardTitle>
-                <CardDescription>Your journey is being silently monitored for your safety.</CardDescription>
-           </CardHeader>
-           <CardContent>
-            {mapPlaceholder && (
-              <div className="aspect-video w-full overflow-hidden rounded-lg border">
-                <Image
-                  src={mapPlaceholder.imageUrl}
-                  alt={mapPlaceholder.description}
-                  width={1200}
-                  height={800}
-                  className="h-full w-full object-cover"
-                  data-ai-hint={mapPlaceholder.imageHint}
-                />
-              </div>
-            )}
-           </CardContent>
-           <CardFooter>
-              <div className="w-full space-y-2">
-                  <div className="flex justify-between text-sm font-medium">
-                      <span>{ride.startLocation}</span>
-                      <span>{ride.destination}</span>
-                  </div>
-                  <Progress value={progress} />
-                  <p className="text-center text-xs text-muted-foreground">{Math.round(progress)}% of trip completed</p>
-              </div>
-           </CardFooter>
-        </Card>
-      </div>
-
-      <div className="space-y-6">
-        <Card className="shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Safety Status</CardTitle>
-            <statusInfo.icon className={cn("h-4 w-4 text-muted-foreground", statusInfo.color)} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusInfo.text}</div>
-            <p className="text-xs text-muted-foreground">
-              Risk Score: {ride.riskScore}
-            </p>
-             <Progress value={ride.riskScore} className="mt-4 h-2 [&>*]:bg-primary" />
-          </CardContent>
-        </Card>
-        
-        <Card>
+    <>
+      {fakeCall && (
+        <FakeCallView 
+            callerName={fakeCall.name}
+            callerType={fakeCall.type}
+            onEndCall={handleEndFakeCall}
+        />
+      )}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card className="h-full shadow-lg">
             <CardHeader>
-                <CardTitle className="text-lg font-headline">Risk Events</CardTitle>
+                  <CardTitle className="font-headline text-2xl">Live Ride Status</CardTitle>
+                  <CardDescription>Your journey is being silently monitored for your safety.</CardDescription>
             </CardHeader>
-            <CardContent className="max-h-48 overflow-y-auto">
-                {ride.riskEvents.length > 0 ? (
-                    <ul className="space-y-2">
-                        {ride.riskEvents.map(event => (
-                            <li key={event.id} className="flex items-start gap-2 text-sm">
-                                <AlertTriangle className="h-4 w-4 mt-0.5 text-yellow-500 shrink-0" />
-                                <div>
-                                    <span>{event.description}</span>
-                                    <span className="ml-2 text-xs text-muted-foreground">({new Date(event.timestamp).toLocaleTimeString()})</span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground">No suspicious events detected.</p>
-                )}
+            <CardContent>
+              {mapPlaceholder && (
+                <div className="aspect-video w-full overflow-hidden rounded-lg border">
+                  <Image
+                    src={mapPlaceholder.imageUrl}
+                    alt={mapPlaceholder.description}
+                    width={1200}
+                    height={800}
+                    className="h-full w-full object-cover"
+                    data-ai-hint={mapPlaceholder.imageHint}
+                  />
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+                <div className="w-full space-y-2">
+                    <div className="flex justify-between text-sm font-medium">
+                        <span>{ride.startLocation}</span>
+                        <span>{ride.destination}</span>
+                    </div>
+                    <Progress value={progress} />
+                    <p className="text-center text-xs text-muted-foreground">{Math.round(progress)}% of trip completed</p>
+                </div>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Safety Status</CardTitle>
+              <statusInfo.icon className={cn("h-4 w-4 text-muted-foreground", statusInfo.color)} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statusInfo.text}</div>
+              <p className="text-xs text-muted-foreground">
+                Risk Score: {ride.riskScore}
+              </p>
+              <Progress value={ride.riskScore} className="mt-4 h-2 [&>*]:bg-primary" />
+            </CardContent>
+          </Card>
+          
+          <Card>
+              <CardHeader>
+                  <CardTitle className="text-lg font-headline">Risk Events</CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-48 overflow-y-auto">
+                  {ride.riskEvents.length > 0 ? (
+                      <ul className="space-y-2">
+                          {ride.riskEvents.map(event => (
+                              <li key={event.id} className="flex items-start gap-2 text-sm">
+                                  <AlertTriangle className="h-4 w-4 mt-0.5 text-yellow-500 shrink-0" />
+                                  <div>
+                                      <span>{event.description}</span>
+                                      <span className="ml-2 text-xs text-muted-foreground">({new Date(event.timestamp).toLocaleTimeString()})</span>
+                                  </div>
+                              </li>
+                          ))}
+                      </ul>
+                  ) : (
+                      <p className="text-sm text-muted-foreground">No suspicious events detected.</p>
+                  )}
+              </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+                <CardTitle className="text-lg font-headline">Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+                <FakeCallOptions onSelectCall={handleSelectFakeCall} />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full">
+                      <PhoneOff className="mr-2 h-4 w-4" /> End Ride
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure you want to end the ride?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will stop location tracking. Only do this if you have safely reached your destination.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onEndRide(ride)}>Confirm End Ride</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </CardContent>
         </Card>
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="w-full">
-              <PhoneOff className="mr-2 h-4 w-4" /> End Ride
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure you want to end the ride?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will stop location tracking. Only do this if you have safely reached your destination.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onEndRide(ride)}>Confirm End Ride</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        </div>
       </div>
-    </div>
+
+      <AlertDialog open={showDeviationAlert} onOpenChange={setShowDeviationAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Route deviation detected. Are you safe?</AlertDialogTitle>
+            <AlertDialogDescription>
+              We've noticed you've deviated from the planned route. Please confirm your status.
+              If you don't respond, your risk level will be escalated.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleUnsafeConfirmation}>I'm Not Safe</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSafeConfirmation}>Yes, I am Safe</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

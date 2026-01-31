@@ -30,6 +30,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       startTime: new Date(),
       riskScore: 0,
       riskEvents: [],
+      deviceStatus: 'online',
+      lastHeartbeat: new Date(),
+      tamperingFlag: false,
     };
     setRides(prev => [...prev, newRide]);
     return newRide;
@@ -60,6 +63,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       riskScore: ride.riskScore,
       triggeredAt: new Date(),
       status: 'active',
+      triggerReason: ride.status === 'emergency' ? 'High Risk Score' : 'Unknown',
+      deviceInfoSnapshot: {
+        os: 'Android 14',
+        appVersion: '1.0.2',
+        network: 'LTE',
+        simStatus: 'Active'
+      }
     };
     setAlerts(prev => [newAlert, ...prev]);
   }, []);
