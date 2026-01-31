@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Ride, RiskEvent } from '@/lib/types';
 import { useAppState } from '@/context/app-state-provider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -32,6 +32,7 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   const [ride, setRide] = useState<Ride>(initialRide);
   const [progress, setProgress] = useState(5);
   const { updateRide } = useAppState();
+  const isInitialMount = useRef(true);
 
   const mapPlaceholder = placeholderData.placeholderImages.find(p => p.id === 'map-placeholder');
 
@@ -73,14 +74,21 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
             riskEvents: newRiskEvents,
         };
 
-        updateRide(updatedRide);
         return updatedRide;
       });
 
     }, 3000);
 
     return () => clearInterval(rideInterval);
-  }, [updateRide]);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      updateRide(ride);
+    }
+  }, [ride, updateRide]);
 
   const getStatusInfo = () => {
     if (ride.status === 'emergency') {
