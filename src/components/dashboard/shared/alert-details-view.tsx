@@ -3,7 +3,7 @@
 import type { Alert } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info, Download, Send } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info, Download, Send, Hand } from 'lucide-react';
 import Image from 'next/image';
 import placeholderData from '@/lib/placeholder-images.json';
 import { useAuth } from '@/context/auth-provider';
@@ -17,6 +17,7 @@ import QuickActions from '../responder/quick-actions';
 import SilentChat from '../responder/silent-chat';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface AlertDetailsViewProps {
   alert: Alert;
@@ -43,6 +44,8 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
     });
   }
 
+  const isGestureSos = alert.triggerMethod === 'gesture';
+
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
@@ -59,7 +62,10 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
         <div className="lg:col-span-2 space-y-6">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Live Tracking</CardTitle>
+              <CardTitle className={cn("font-headline text-2xl flex items-center gap-2", isGestureSos && "text-destructive")}>
+                {isGestureSos && <Hand className="h-6 w-6" />}
+                Live Tracking {isGestureSos && "(GESTURE SOS)"}
+              </CardTitle>
               <CardDescription>
                 Live location of ride <span className="font-bold text-primary">{alert.ride.rideId}</span>
               </CardDescription>
@@ -109,6 +115,12 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                   <div className="flex items-center gap-3">
                       <Info className="h-4 w-4 text-muted-foreground" />
                       <span>Reason: <span className="font-medium">{alert.triggerReason}</span></span>
+                  </div>
+                )}
+                {alert.triggerMethod && (
+                  <div className="flex items-center gap-3">
+                      <Hand className={cn("h-4 w-4 text-muted-foreground", isGestureSos && "text-destructive")} />
+                      <span className={cn(isGestureSos && "font-bold text-destructive")}>Method: <span className="font-medium capitalize">{alert.triggerMethod}</span></span>
                   </div>
                 )}
                 <Separator />

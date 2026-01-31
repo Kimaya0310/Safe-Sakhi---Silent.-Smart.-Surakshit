@@ -75,12 +75,24 @@ export const mockAlerts: Alert[] = [
     triggeredAt: new Date(now.getTime() - 5 * 60000),
     status: 'active',
     triggerReason: 'Phone Power Off Detected',
+    triggerMethod: 'system',
     deviceInfoSnapshot: {
       os: 'Android 14',
       appVersion: '1.0.2',
       network: 'LTE',
       simStatus: 'Active'
     }
+  },
+  {
+    alertId: 'alert_6',
+    ride: { ...rideForAlert, rideId: 'ride_emergency_6', riskScore: 99 },
+    passenger: mockUsers[0],
+    riskScore: 99,
+    triggeredAt: new Date(now.getTime() - 2 * 60000),
+    status: 'active',
+    triggerReason: 'Gesture SOS Activated',
+    triggerMethod: 'gesture',
+    assignedOfficer: 'Unassigned'
   },
   {
     alertId: 'alert_2',
@@ -90,6 +102,7 @@ export const mockAlerts: Alert[] = [
     triggeredAt: new Date(now.getTime() - 30 * 60000),
     status: 'acknowledged',
     triggerReason: 'Route Deviation',
+    triggerMethod: 'system',
     assignedOfficer: 'Officer Singh'
   },
   {
@@ -100,6 +113,7 @@ export const mockAlerts: Alert[] = [
     triggeredAt: new Date(now.getTime() - 2 * 60 * 60000),
     status: 'resolved',
     triggerReason: 'Extended Device Shutdown',
+    triggerMethod: 'system',
   },
     {
     alertId: 'alert_4',
@@ -109,6 +123,7 @@ export const mockAlerts: Alert[] = [
     triggeredAt: new Date(now.getTime() - 3 * 60000),
     status: 'active',
     triggerReason: 'Sudden Disconnect',
+    triggerMethod: 'system',
   },
   {
     alertId: 'alert_5',
@@ -118,14 +133,19 @@ export const mockAlerts: Alert[] = [
     triggeredAt: new Date(now.getTime() - 45 * 60000),
     status: 'in-progress',
     triggerReason: 'Device Tampering Suspected',
+    triggerMethod: 'system',
     assignedOfficer: 'Officer Gupta'
   },
 ];
 
 export const mockRides: Ride[] = [
   rideForAlert,
+  {...mockAlerts[0].ride},
   {...mockAlerts[1].ride},
   {...mockAlerts[2].ride},
+  {...mockAlerts[3].ride},
+  {...mockAlerts[4].ride},
+  {...mockAlerts[5].ride},
   {
     rideId: 'ride_completed_1',
     passengerId: 'user_passenger_1',

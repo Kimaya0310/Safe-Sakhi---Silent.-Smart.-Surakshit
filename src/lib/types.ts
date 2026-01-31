@@ -1,3 +1,5 @@
+'use client';
+
 export type UserRole = 'passenger' | 'responder' | 'authority' | 'admin';
 
 export type User = {
@@ -47,6 +49,7 @@ export type Alert = {
   triggeredAt: Date;
   status: AlertStatus;
   triggerReason?: string;
+  triggerMethod?: 'manual' | 'silent' | 'gesture' | 'system';
   deviceInfoSnapshot?: Record<string, any>;
   caseNotes?: { note: string; timestamp: Date; author: string }[];
   assignedOfficer?: string;
@@ -91,4 +94,13 @@ export type AuditLog = {
   userId: string;
   timestamp: Date;
   metadata: Record<string, any>;
+}
+
+export type GestureLog = {
+  rideId: string;
+  userId: string;
+  gestureType: string;
+  sensitivityLevel: 'low' | 'medium' | 'high';
+  timestamp: Date;
+  escalationTriggered: boolean;
 }

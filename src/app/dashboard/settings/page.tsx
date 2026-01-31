@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-provider';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Hand } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
@@ -15,11 +17,14 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.name || '');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
+  const [isGestureSosEnabled, setIsGestureSosEnabled] = useState(true);
+  const [gestureSensitivity, setGestureSensitivity] = useState<'low' | 'medium' | 'high'>('medium');
+
 
   const handleSaveChanges = () => {
     if (!user) return;
     updateUser({ name });
-    // In a real app, you'd also save notification settings to a backend.
+    // In a real app, you'd also save notification and gesture settings to a backend.
     toast({
       title: 'Settings Saved',
       description: 'Your profile and notification settings have been updated.',
@@ -76,6 +81,67 @@ export default function SettingsPage() {
             </div>
         </CardContent>
       </Card>
+
+      {user?.role === 'passenger' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Hand className="h-5 w-5" />
+              Gesture SOS Settings
+            </CardTitle>
+            <CardDescription>
+              Trigger an emergency alert by shaking your phone. This requires native device access and is simulated here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="gesture-sos-enabled">Enable Gesture SOS</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow triggering alerts with a physical gesture.
+                </p>
+              </div>
+              <Switch
+                id="gesture-sos-enabled"
+                checked={isGestureSosEnabled}
+                onCheckedChange={setIsGestureSosEnabled}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Sensitivity Level</Label>
+              <p className="text-sm text-muted-foreground">
+                Set how sensitive the gesture detection should be.
+              </p>
+              <RadioGroup
+                defaultValue={gestureSensitivity}
+                onValueChange={(value: 'low' | 'medium' | 'high') => setGestureSensitivity(value)}
+                className="grid grid-cols-3 gap-4 pt-2"
+                disabled={!isGestureSosEnabled}
+              >
+                <div>
+                  <RadioGroupItem value="low" id="sensitivity-low" className="peer sr-only" />
+                  <Label htmlFor="sensitivity-low" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                    Low
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="medium" id="sensitivity-medium" className="peer sr-only" />
+                  <Label htmlFor="sensitivity-medium" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                    Medium
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="high" id="sensitivity-high" className="peer sr-only" />
+                  <Label htmlFor="sensitivity-high" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                    High
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <Button onClick={handleSaveChanges}>Save Gesture Settings</Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
