@@ -16,6 +16,7 @@ import IncidentTimeline from '../authority/incident-timeline';
 import QuickActions from '../responder/quick-actions';
 import SilentChat from '../responder/silent-chat';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 interface AlertDetailsViewProps {
   alert: Alert;
@@ -27,6 +28,7 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
   const mapPlaceholder = placeholderData.placeholderImages.find(p => p.id === 'map-placeholder');
   const { user } = useAuth();
   const { updateAlert, rides } = useAppState();
+  const { toast } = useToast();
 
   const handleStatusChange = (status: Alert['status']) => {
     updateAlert({ ...alert, status });
@@ -34,14 +36,21 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
   
   const rideForAlert = rides.find(r => r.rideId === alert.ride.rideId) || alert.ride;
 
+  const handleExport = () => {
+    toast({
+        title: "Exporting Evidence...",
+        description: "A PDF report is being generated for this case (simulation).",
+    });
+  }
+
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onBack} suppressHydrationWarning>
+        <Button variant="outline" onClick={onBack}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
         </Button>
         {isAuthority && (
-            <Button variant="outline" suppressHydrationWarning>
+            <Button variant="outline" onClick={handleExport}>
                 <Download className="mr-2 h-4 w-4" /> Export Evidence
             </Button>
         )}

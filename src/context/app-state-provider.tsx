@@ -37,21 +37,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setRides(prev => [...prev, newRide]);
     return newRide;
   }, []);
-
-  const updateRide = useCallback((updatedRide: Ride) => {
-    setRides(prev => prev.map(r => r.rideId === updatedRide.rideId ? updatedRide : r));
-    if (updatedRide.status === 'emergency') {
-        const existingAlert = alerts.find(a => a.ride.rideId === updatedRide.rideId);
-        if (!existingAlert) {
-            createAlert(updatedRide);
-        }
-    }
-  }, [alerts]);
-
-  const endRide = useCallback((rideId: string) => {
-    setRides(prev => prev.map(r => r.rideId === rideId ? { ...r, status: 'completed', endTime: new Date() } : r));
-  }, []);
-
+  
   const createAlert = useCallback((ride: Ride) => {
     const passenger = mockUsers.find(u => u.id === ride.passengerId);
     if (!passenger) return;
@@ -71,7 +57,25 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         simStatus: 'Active'
       }
     };
-    setAlerts(prev => [newAlert, ...prev]);
+    
+    setAlerts(prevAlerts => {
+        const existingAlert = prevAlerts.find(a => a.ride.rideId === ride.rideId);
+        if (existingAlert) {
+            return prevAlerts;
+        }
+        return [newAlert, ...prevAlerts];
+    });
+  }, []);
+
+  const updateRide = useCallback((updatedRide: Ride) => {
+    setRides(prev => prev.map(r => r.rideId === updatedRide.rideId ? updatedRide : r));
+    if (updatedRide.status === 'emergency') {
+        createAlert(updatedRide);
+    }
+  }, [createAlert]);
+
+  const endRide = useCallback((rideId: string) => {
+    setRides(prev => prev.map(r => r.rideId === rideId ? { ...r, status: 'completed', endTime: new Date() } : r));
   }, []);
 
   const updateAlert = useCallback((updatedAlert: Alert) => {

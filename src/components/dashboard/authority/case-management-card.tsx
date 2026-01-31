@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Alert, AlertStatus } from '@/lib/types';
 import { ThumbsDown, ThumbsUp, ChevronsUp, ChevronsDown, ShieldCheck } from 'lucide-react';
 import { useAppState } from '@/context/app-state-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface CaseManagementCardProps {
   alert: Alert;
@@ -21,13 +22,19 @@ interface CaseManagementCardProps {
 
 export default function CaseManagementCard({ alert, onStatusChange }: CaseManagementCardProps) {
     const { updateAlert } = useAppState();
+    const { toast } = useToast();
 
     const handleAssignOfficer = () => {
         // In a real app, this would be a search/select UI
         const officer = prompt("Enter name of officer to assign:");
         if (officer) {
             updateAlert({ ...alert, assignedOfficer: officer });
+            toast({ title: "Officer Assigned", description: `${officer} has been assigned to case ${alert.alertId}.` });
         }
+    }
+    
+    const handleManualAction = (action: string) => {
+        toast({ title: "Manual Action", description: `${action} signal sent for case ${alert.alertId}.` });
     }
 
   return (
@@ -39,7 +46,7 @@ export default function CaseManagementCard({ alert, onStatusChange }: CaseManage
         <div className="space-y-2">
           <Label>Case Status</Label>
           <Select onValueChange={(val) => onStatusChange(val as AlertStatus)} defaultValue={alert.status}>
-            <SelectTrigger suppressHydrationWarning>
+            <SelectTrigger>
               <SelectValue placeholder="Update status" />
             </SelectTrigger>
             <SelectContent>
@@ -56,7 +63,7 @@ export default function CaseManagementCard({ alert, onStatusChange }: CaseManage
             {alert.assignedOfficer ? (
                  <p className="font-medium">{alert.assignedOfficer}</p>
             ) : (
-                <Button onClick={handleAssignOfficer} variant="outline" size="sm" className="w-full" suppressHydrationWarning>Assign Officer</Button>
+                <Button onClick={handleAssignOfficer} variant="outline" size="sm" className="w-full">Assign Officer</Button>
             )}
         </div>
         <div className="space-y-2">
@@ -66,10 +73,10 @@ export default function CaseManagementCard({ alert, onStatusChange }: CaseManage
         <div className="space-y-2">
             <Label>Manual Actions</Label>
             <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm" suppressHydrationWarning><ChevronsUp className="mr-2"/> Escalate</Button>
-                <Button variant="outline" size="sm" suppressHydrationWarning><ChevronsDown className="mr-2"/> De-escalate</Button>
-                <Button variant="outline" size="sm" suppressHydrationWarning><ThumbsUp className="mr-2"/> Confirm Emergency</Button>
-                <Button variant="outline" size="sm" suppressHydrationWarning><ThumbsDown className="mr-2"/> Flag as False</Button>
+                <Button variant="outline" size="sm" onClick={() => handleManualAction('Escalate')}><ChevronsUp className="mr-2"/> Escalate</Button>
+                <Button variant="outline" size="sm" onClick={() => handleManualAction('De-escalate')}><ChevronsDown className="mr-2"/> De-escalate</Button>
+                <Button variant="outline" size="sm" onClick={() => handleManualAction('Confirm Emergency')}><ThumbsUp className="mr-2"/> Confirm Emergency</Button>
+                <Button variant="outline" size="sm" onClick={() => handleManualAction('Flag as False')}><ThumbsDown className="mr-2"/> Flag as False</Button>
             </div>
         </div>
         <div>
