@@ -10,7 +10,7 @@ import {
 
 export default function SignupPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4">
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-2xl">
           <CardHeader className="text-center">
@@ -27,6 +27,9 @@ export default function SignupPage() {
           </CardContent>
         </Card>
       </div>
+      <footer className="absolute bottom-6 text-center text-sm text-muted-foreground">
+        <p>Silent. Smart. Surakshit.</p>
+      </footer>
     </main>
   );
 }
