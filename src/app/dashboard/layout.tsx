@@ -27,6 +27,8 @@ import {
   UserCheck,
   Building,
   ShieldCheck,
+  LineChart,
+  FileClock,
 } from 'lucide-react';
 import React from 'react';
 import { AppStateProvider } from '@/context/app-state-provider';
@@ -74,7 +76,13 @@ export default function DashboardLayout({
     authority: [
       { icon: ShieldAlert, label: 'Emergency Cases', href: '/dashboard' },
       { icon: Building, label: 'Organizations', href: '/dashboard/organizations' },
+      { icon: LineChart, label: 'Analytics', href: '/dashboard/analytics' },
+      { icon: FileClock, label: 'Audit Log', href: '/dashboard/audit-log' },
       { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+    ],
+    admin: [
+        { icon: LineChart, label: 'Analytics', href: '/dashboard/analytics' },
+        { icon: FileClock, label: 'Audit Log', href: '/dashboard/audit-log' },
     ]
   }
 
@@ -109,7 +117,7 @@ export default function DashboardLayout({
         </aside>
         <div className="flex flex-1 flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:px-6">
-            <Button size="icon" variant="outline" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0">
+            <Button size="icon" variant="outline" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0" suppressHydrationWarning>
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle sidebar</span>
             </Button>
@@ -117,7 +125,7 @@ export default function DashboardLayout({
                <span className="text-sm font-medium text-muted-foreground">{user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full" suppressHydrationWarning>
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person face" />
                       <AvatarFallback>{getInitials(user.name)}</AvatarFallback>

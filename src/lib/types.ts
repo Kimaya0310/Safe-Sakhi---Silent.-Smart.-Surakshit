@@ -1,4 +1,4 @@
-export type UserRole = 'passenger' | 'responder' | 'authority';
+export type UserRole = 'passenger' | 'responder' | 'authority' | 'admin';
 
 export type User = {
   id: string;
@@ -37,15 +37,19 @@ export type RiskEvent = {
   description: string;
 };
 
+export type AlertStatus = 'active' | 'acknowledged' | 'in-progress' | 'resolved' | 'closed';
+
 export type Alert = {
   alertId: string;
   ride: Ride;
   passenger: User;
   riskScore: number;
   triggeredAt: Date;
-  status: 'active' | 'acknowledged' | 'resolved';
+  status: AlertStatus;
   triggerReason?: string;
   deviceInfoSnapshot?: Record<string, any>;
+  caseNotes?: { note: string; timestamp: Date; author: string }[];
+  assignedOfficer?: string;
 };
 
 export type DeviceLog = {
@@ -63,3 +67,28 @@ export type OfflineMessage = {
     synced: boolean;
     timestamp: Date;
 };
+
+export type CaseLog = {
+  caseId: string;
+  rideId: string;
+  status: AlertStatus;
+  notes: string;
+  assignedOfficer: string;
+  timestamps: Record<AlertStatus, Date>;
+}
+
+export type AnalyticsAggregate = {
+  metricType: string;
+  region: string;
+  timeWindow: string;
+  value: number;
+}
+
+export type AuditLog = {
+  logId: string;
+  eventType: string;
+  userRole: UserRole;
+  userId: string;
+  timestamp: Date;
+  metadata: Record<string, any>;
+}

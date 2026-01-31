@@ -3,7 +3,7 @@
 import type { Alert } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info, Download, Send } from 'lucide-react';
 import Image from 'next/image';
 import placeholderData from '@/lib/placeholder-images.json';
 import { useAuth } from '@/context/auth-provider';
@@ -11,6 +11,11 @@ import SummarizeRideCard from '../authority/summarize-ride-card';
 import { useAppState } from '@/context/app-state-provider';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import CaseManagementCard from '../authority/case-management-card';
+import IncidentTimeline from '../authority/incident-timeline';
+import QuickActions from '../responder/quick-actions';
+import SilentChat from '../responder/silent-chat';
+import { Separator } from '@/components/ui/separator';
 
 interface AlertDetailsViewProps {
   alert: Alert;
@@ -21,21 +26,29 @@ interface AlertDetailsViewProps {
 export default function AlertDetailsView({ alert, onBack, isAuthority = false }: AlertDetailsViewProps) {
   const mapPlaceholder = placeholderData.placeholderImages.find(p => p.id === 'map-placeholder');
   const { user } = useAuth();
-  const { resolveAlert } = useAppState();
+  const { updateAlert, rides } = useAppState();
 
-  const handleResolve = () => {
-    resolveAlert(alert.alertId);
-    onBack();
-  }
+  const handleStatusChange = (status: Alert['status']) => {
+    updateAlert({ ...alert, status });
+  };
   
+  const rideForAlert = rides.find(r => r.rideId === alert.ride.rideId) || alert.ride;
+
   return (
     <div className="space-y-6">
-       <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+       <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={onBack} suppressHydrationWarning>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
         </Button>
+        {isAuthority && (
+            <Button variant="outline" suppressHydrationWarning>
+                <Download className="mr-2 h-4 w-4" /> Export Evidence
+            </Button>
+        )}
+       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Card className="h-full shadow-lg">
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Live Tracking</CardTitle>
               <CardDescription>
@@ -57,11 +70,14 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
               )}
             </CardContent>
           </Card>
+          {isAuthority && <IncidentTimeline ride={rideForAlert} />}
+          {!isAuthority && user?.role === 'responder' && <SilentChat />}
         </div>
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Case Details</CardTitle>
+              <CardDescription>Alert ID: {alert.alertId}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
                 <div className="flex items-center gap-3">
@@ -86,6 +102,7 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                       <span>Reason: <span className="font-medium">{alert.triggerReason}</span></span>
                   </div>
                 )}
+                <Separator />
                 <div className="flex items-start gap-3">
                     <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
@@ -95,7 +112,29 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                 </div>
             </CardContent>
           </Card>
-           {user?.role === 'authority' && isAuthority && <SummarizeRideCard ride={alert.ride} />}
+           
+           {!isAuthority && user?.role === 'responder' && (
+            <>
+              <QuickActions />
+              <Card>
+                <CardHeader>
+                    <CardTitle>ETA</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold">12 mins</p>
+                    <p className="text-sm text-muted-foreground">~ 3.4 km away</p>
+                </CardContent>
+              </Card>
+            </>
+           )}
+
+           {isAuthority && (
+            <>
+                <CaseManagementCard alert={alert} onStatusChange={handleStatusChange}/>
+                <SummarizeRideCard ride={alert.ride} />
+            </>
+           )}
+           
            {isAuthority && alert.deviceInfoSnapshot && (
               <Card>
                 <CardHeader>
@@ -108,11 +147,6 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                   <p><strong>SIM Status:</strong> {alert.deviceInfoSnapshot.simStatus}</p>
                 </CardContent>
               </Card>
-           )}
-           {alert.status !== 'resolved' && (
-               <Button onClick={handleResolve} className="w-full">
-                  Mark as Resolved
-               </Button>
            )}
         </div>
       </div>

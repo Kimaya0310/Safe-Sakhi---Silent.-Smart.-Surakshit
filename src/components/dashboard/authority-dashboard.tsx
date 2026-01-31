@@ -11,8 +11,8 @@ export default function AuthorityDashboard() {
   const { alerts } = useAppState();
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   
-  const activeAlerts = alerts.filter(a => a.status === 'active' || a.status === 'acknowledged');
-  const resolvedAlerts = alerts.filter(a => a.status === 'resolved');
+  const openCases = alerts.filter(a => a.status === 'active' || a.status === 'acknowledged' || a.status === 'in-progress');
+  const closedCases = alerts.filter(a => a.status === 'resolved' || a.status === 'closed');
 
   const handleSelectAlert = (alert: Alert) => {
     setSelectedAlert(alert);
@@ -27,16 +27,16 @@ export default function AuthorityDashboard() {
   }
 
   return (
-    <Tabs defaultValue="active" className="w-full">
+    <Tabs defaultValue="open" className="w-full">
       <TabsList className="grid w-full grid-cols-2 max-w-md">
-        <TabsTrigger value="active">Active Cases</TabsTrigger>
-        <TabsTrigger value="resolved">Resolved Cases</TabsTrigger>
+        <TabsTrigger value="open">Open Cases</TabsTrigger>
+        <TabsTrigger value="closed">Closed Cases</TabsTrigger>
       </TabsList>
-      <TabsContent value="active">
-        <AlertsView alerts={activeAlerts} onSelectAlert={handleSelectAlert} title="Active Emergency Cases" />
+      <TabsContent value="open">
+        <AlertsView alerts={openCases} onSelectAlert={handleSelectAlert} title="Open Emergency Cases" />
       </TabsContent>
-      <TabsContent value="resolved">
-        <AlertsView alerts={resolvedAlerts} onSelectAlert={handleSelectAlert} title="Resolved Cases" />
+      <TabsContent value="closed">
+        <AlertsView alerts={closedCases} onSelectAlert={handleSelectAlert} title="Closed Cases" />
       </TabsContent>
     </Tabs>
   );

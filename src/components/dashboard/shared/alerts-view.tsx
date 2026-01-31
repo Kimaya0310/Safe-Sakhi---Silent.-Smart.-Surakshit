@@ -18,10 +18,14 @@ export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewP
     switch(status) {
         case 'active': return 'destructive';
         case 'acknowledged': return 'secondary';
+        case 'in-progress': return 'warning';
         case 'resolved': return 'default';
+        case 'closed': return 'outline';
         default: return 'outline';
     }
   }
+  
+  const sortedAlerts = [...alerts].sort((a, b) => b.riskScore - a.riskScore);
 
   return (
     <Card>
@@ -29,7 +33,7 @@ export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewP
         <CardTitle className="font-headline">{title}</CardTitle>
         <CardDescription>
           {alerts.length > 0 
-            ? 'Select a case to view details and live location.'
+            ? 'Select a case to view details. Cases are sorted by risk score.'
             : 'No cases to show at this time.'
           }
         </CardDescription>
@@ -45,15 +49,15 @@ export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewP
             </TableRow>
           </TableHeader>
           <TableBody>
-            {alerts.length > 0 ? alerts.map((alert) => (
+            {sortedAlerts.length > 0 ? sortedAlerts.map((alert) => (
               <TableRow key={alert.alertId} onClick={() => onSelectAlert(alert)} className="cursor-pointer">
                 <TableCell className="font-medium">{alert.passenger.name}</TableCell>
                 <TableCell>
-                    <Badge variant={alert.riskScore > 75 ? 'destructive' : 'secondary'}>{alert.riskScore}</Badge>
+                    <Badge variant={alert.riskScore > 75 ? 'destructive' : 'warning'}>{alert.riskScore}</Badge>
                 </TableCell>
                 <TableCell>{formatDistanceToNow(alert.triggeredAt, { addSuffix: true })}</TableCell>
                 <TableCell>
-                  <Badge variant={getBadgeVariant(alert.status)}>{alert.status}</Badge>
+                  <Badge variant={getBadgeVariant(alert.status)} className="capitalize">{alert.status.replace('-', ' ')}</Badge>
                 </TableCell>
               </TableRow>
             )) : (

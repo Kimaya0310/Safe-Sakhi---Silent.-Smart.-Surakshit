@@ -28,7 +28,7 @@ import { Loader2 } from 'lucide-react';
 const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
   password: z.string().min(6, 'Password must be at least 6 characters.'),
-  role: z.enum(['passenger', 'responder', 'authority'], {
+  role: z.enum(['passenger', 'responder', 'authority', 'admin'], {
     required_error: 'Please select a role.',
   }),
 });
@@ -59,7 +59,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="name@example.com" {...field} />
+                <Input placeholder="name@example.com" {...field} suppressHydrationWarning />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -72,7 +72,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input type="password" placeholder="••••••••" {...field} suppressHydrationWarning />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,7 +86,7 @@ export function LoginForm() {
               <FormLabel>Role</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger suppressHydrationWarning>
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                 </FormControl>
@@ -94,13 +94,14 @@ export function LoginForm() {
                   <SelectItem value="passenger">Passenger</SelectItem>
                   <SelectItem value="responder">Responder</SelectItem>
                   <SelectItem value="authority">Authority</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full" disabled={loading} suppressHydrationWarning>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Log In
         </Button>

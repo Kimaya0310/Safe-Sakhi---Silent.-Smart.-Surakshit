@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import type { Ride, Alert } from '@/lib/types';
+import type { Ride, Alert, AlertStatus } from '@/lib/types';
 import { mockRides, mockAlerts, mockUsers } from '@/lib/data';
 
 interface AppStateContextType {
@@ -11,7 +11,7 @@ interface AppStateContextType {
   updateRide: (updatedRide: Ride) => void;
   endRide: (rideId: string) => void;
   createAlert: (ride: Ride) => void;
-  resolveAlert: (alertId: string) => void;
+  updateAlert: (updatedAlert: Alert) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -74,12 +74,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setAlerts(prev => [newAlert, ...prev]);
   }, []);
 
-  const resolveAlert = useCallback((alertId: string) => {
-    setAlerts(prev => prev.map(a => a.alertId === alertId ? { ...a, status: 'resolved' } : a));
+  const updateAlert = useCallback((updatedAlert: Alert) => {
+    setAlerts(prev => prev.map(a => a.alertId === updatedAlert.alertId ? updatedAlert : a));
   }, []);
 
 
-  const value = { rides, alerts, startRide, updateRide, endRide, createAlert, resolveAlert };
+  const value = { rides, alerts, startRide, updateRide, endRide, createAlert, updateAlert };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }
