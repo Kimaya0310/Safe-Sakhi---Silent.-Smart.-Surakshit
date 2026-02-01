@@ -61,23 +61,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const userDoc = await getDoc(doc(firestore, 'users', userCredential.user.uid));
+      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists() && userDoc.data().role === role) {
-        const userData = convertTimestamps({ id: userDoc.id, ...userDoc.data() });
-        setUser(userData as User);
+      if (userDoc.exists()) {
+        // Profile exists, check role
+        if (userDoc.data().role === role) {
+          const userData = convertTimestamps({ id: userDoc.id, ...userDoc.data() });
+          setUser(userData as User);
+          router.push('/dashboard');
+        } else {
+          // Role mismatch
+          throw new Error(`You are registered as a ${userDoc.data().role}, not as a ${role}.`);
+        }
+      } else {
+        // Profile does NOT exist - this is the recovery path for a failed signup
+        console.warn("User authenticated but profile missing. Creating profile now.");
+        
+        const name = email.split('@')[0]; // Use email prefix as a default name
+
+        const newUser: Omit<User, 'id'> = {
+          name,
+          email,
+          role,
+          avatarUrl: `https://picsum.photos/seed/${userCredential.user.uid}/200`,
+          emergencyContacts: [],
+        };
+        
+        // This is a login flow, only passengers would have given consent at signup
+        if (role === 'passenger') {
+          newUser.consentToMonitoring = true;
+        }
+        
+        await setDoc(userDocRef, newUser);
+        
+        const finalUser = { id: userCredential.user.uid, ...newUser };
+        setUser(finalUser as User);
         router.push('/dashboard');
-      } else if (userDoc.exists()) {
-        throw new Error(`You are not registered as a ${role}.`);
-      } 
-      else {
-        throw new Error('No user profile found.');
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      let description = "An unknown error occurred.";
+      let description = "An unknown error occurred during login.";
       if (error.code === 'auth/invalid-credential') {
-        description = "The email or password you entered is incorrect. Please double-check your credentials or sign up for a new account.";
+        description = "The email or password you entered is incorrect. Please double-check your credentials.";
       } else {
         description = error.message;
       }
