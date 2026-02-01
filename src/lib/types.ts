@@ -1,4 +1,4 @@
-'use client';
+import type { Timestamp } from "firebase/firestore";
 
 export type UserRole = 'passenger' | 'responder' | 'authority' | 'admin';
 
@@ -9,7 +9,7 @@ export type EmergencyContact = {
   level: GuardianVerificationLevel;
 };
 
-export type User = {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -27,19 +27,19 @@ export type Ride = {
   startLocation: string;
   destination: string;
   status: 'idle' | 'active' | 'completed' | 'emergency';
-  startTime?: Date;
-  endTime?: Date;
+  startTime?: Date | Timestamp;
+  endTime?: Date | Timestamp;
   riskScore: number;
   riskEvents: RiskEvent[];
   pastRouteData?: string;
   deviceStatus?: 'online' | 'offline' | 'poweredOff';
-  lastHeartbeat?: Date;
+  lastHeartbeat?: Date | Timestamp;
   tamperingFlag?: boolean;
   forensics?: {
     lastKnownLocation: string;
     lastNetworkStatus: string;
     lastBatteryPercentage: number;
-    lastUserInteraction: Date;
+    lastUserInteraction: Date | Timestamp;
   };
 };
 
@@ -48,7 +48,7 @@ export type RiskEvent = {
   rideId: string;
   eventType: 'deviation' | 'stop' | 'behavior';
   severity: number;
-  timestamp: Date;
+  timestamp: Date | Timestamp;
   description: string;
 };
 
@@ -59,12 +59,12 @@ export type Alert = {
   ride: Ride;
   passenger: User;
   riskScore: number;
-  triggeredAt: Date;
+  triggeredAt: Date | Timestamp;
   status: AlertStatus;
   triggerReason?: string;
   triggerMethod?: 'manual' | 'silent' | 'gesture' | 'system';
   deviceInfoSnapshot?: Record<string, any>;
-  caseNotes?: { note: string; timestamp: Date; author: string }[];
+  caseNotes?: { note: string; timestamp: Date | Timestamp; author: string }[];
   assignedOfficer?: string;
 };
 
@@ -73,7 +73,7 @@ export type DeviceLog = {
     deviceStatus: 'online' | 'offline' | 'poweredOff';
     simStatus: string;
     networkStatus: string;
-    timestamp: Date;
+    timestamp: Date | Timestamp;
 };
 
 export type OfflineMessage = {
@@ -81,7 +81,7 @@ export type OfflineMessage = {
     receiverId: string;
     message: string;
     synced: boolean;
-    timestamp: Date;
+    timestamp: Date | Timestamp;
 };
 
 export type CaseLog = {
@@ -90,7 +90,7 @@ export type CaseLog = {
   status: AlertStatus;
   notes: string;
   assignedOfficer: string;
-  timestamps: Record<AlertStatus, Date>;
+  timestamps: Record<AlertStatus, Date | Timestamp>;
 }
 
 export type AnalyticsAggregate = {
@@ -105,7 +105,7 @@ export type AuditLog = {
   eventType: string;
   userRole: UserRole;
   userId: string;
-  timestamp: Date;
+  timestamp: Date | Timestamp;
   metadata: Record<string, any>;
 }
 
@@ -114,7 +114,7 @@ export type GestureLog = {
   userId: string;
   gestureType: string;
   sensitivityLevel: 'low' | 'medium' | 'high';
-  timestamp: Date;
+  timestamp: Date | Timestamp;
   escalationTriggered: boolean;
 }
 
@@ -123,14 +123,14 @@ export type IncidentLedger = {
   rideId: string;
   eventHash: string;
   eventType: string;
-  timestamp: Date;
+  timestamp: Date | Timestamp;
   previousHash: string;
 };
 
 export type ConsentToken = {
   rideId: string;
   consentHash: string;
-  timestamp: Date;
+  timestamp: Date | Timestamp;
 };
 
 export type GuardianProfile = {

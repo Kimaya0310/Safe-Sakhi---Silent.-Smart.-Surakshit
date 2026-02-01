@@ -39,14 +39,14 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'passenger@example.com',
+      password: 'password',
       role: 'passenger',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    login(values.email, values.role as UserRole);
+    login(values.email, values.password, values.role as UserRole);
   }
 
   return (

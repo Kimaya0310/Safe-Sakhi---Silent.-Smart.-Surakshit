@@ -1,0 +1,262 @@
+
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the Safe Sakhi application.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["passenger", "responder", "authority", "admin"] },
+        "phone": { "type": "string" },
+        "emergencyContacts": {
+          "type": "array",
+          "items": { "$ref": "#/entities/EmergencyContact" }
+        },
+        "organization": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "avatarUrl": { "type": "string" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "EmergencyContact": {
+      "title": "Emergency Contact",
+      "description": "An emergency contact for a user.",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "level": { "$ref": "#/entities/GuardianVerificationLevel" }
+      },
+      "required": ["phone", "level"]
+    },
+    "GuardianVerificationLevel": {
+        "title": "Guardian Verification Level",
+        "description": "The verification level of a guardian.",
+        "type": "string",
+        "enum": ["primary", "secondary", "emergency_professional"]
+    },
+    "Ride": {
+        "title": "Ride",
+        "type": "object",
+        "properties": {
+            "passengerId": { "type": "string" },
+            "startLocation": { "type": "string" },
+            "destination": { "type": "string" },
+            "status": { "type": "string", "enum": ["idle", "active", "completed", "emergency"] },
+            "startTime": { "type": "string", "format": "date-time" },
+            "endTime": { "type": "string", "format": "date-time" },
+            "riskScore": { "type": "number" },
+            "pastRouteData": { "type": "string" },
+            "deviceStatus": { "type": "string", "enum": ["online", "offline", "poweredOff"] },
+            "lastHeartbeat": { "type": "string", "format": "date-time" },
+            "tamperingFlag": { "type": "boolean" },
+            "forensics": { "$ref": "#/entities/Forensics" }
+        }
+    },
+    "RiskEvent": {
+      "title": "Risk Event",
+      "type": "object",
+      "properties": {
+        "eventType": { "type": "string", "enum": ["deviation", "stop", "behavior"] },
+        "severity": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" }
+      }
+    },
+    "Forensics": {
+        "title": "Forensics",
+        "type": "object",
+        "properties": {
+            "lastKnownLocation": { "type": "string" },
+            "lastNetworkStatus": { "type": "string" },
+            "lastBatteryPercentage": { "type": "number" },
+            "lastUserInteraction": { "type": "string", "format": "date-time" }
+        }
+    },
+    "Alert": {
+      "title": "Alert",
+      "type": "object",
+      "properties": {
+        "rideId": { "type": "string" },
+        "passengerId": { "type": "string" },
+        "riskScore": { "type": "number" },
+        "triggeredAt": { "type": "string", "format": "date-time" },
+        "status": { "$ref": "#/entities/AlertStatus" },
+        "triggerReason": { "type": "string" },
+        "triggerMethod": { "type": "string", "enum": ["manual", "silent", "gesture", "system"] },
+        "deviceInfoSnapshot": { "type": "object" },
+        "assignedOfficer": { "type": "string" }
+      }
+    },
+    "AlertStatus": {
+        "title": "Alert Status",
+        "type": "string",
+        "enum": ["active", "acknowledged", "in-progress", "resolved", "closed"]
+    },
+    "DeviceLog": {
+      "title": "Device Log",
+      "type": "object",
+      "properties": {
+        "rideId": { "type": "string" },
+        "deviceStatus": { "type": "string", "enum": ["online", "offline", "poweredOff"] },
+        "simStatus": { "type": "string" },
+        "networkStatus": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "OfflineMessage": {
+      "title": "Offline Message",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "message": { "type": "string" },
+        "synced": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "CaseLog": {
+      "title": "Case Log",
+      "type": "object",
+      "properties": {
+        "rideId": { "type": "string" },
+        "status": { "$ref": "#/entities/AlertStatus" },
+        "notes": { "type": "string" },
+        "assignedOfficer": { "type": "string" },
+        "timestamps": { "type": "object" }
+      }
+    },
+    "AnalyticsAggregate": {
+      "title": "Analytics Aggregate",
+      "type": "object",
+      "properties": {
+        "metricType": { "type": "string" },
+        "region": { "type": "string" },
+        "timeWindow": { "type": "string" },
+        "value": { "type": "number" }
+      }
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "type": "object",
+      "properties": {
+        "eventType": { "type": "string" },
+        "userRole": { "type": "string", "enum": ["passenger", "responder", "authority", "admin"] },
+        "userId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object" }
+      }
+    },
+    "GestureLog": {
+      "title": "Gesture Log",
+      "type": "object",
+      "properties": {
+        "rideId": { "type": "string" },
+        "userId": { "type": "string" },
+        "gestureType": { "type": "string" },
+        "sensitivityLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "escalationTriggered": { "type": "boolean" }
+      }
+    },
+    "IncidentLedger": {
+      "title": "Incident Ledger",
+      "type": "object",
+      "properties": {
+        "rideId": { "type": "string" },
+        "eventHash": { "type": "string" },
+        "eventType": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "previousHash": { "type": "string" }
+      }
+    },
+    "ConsentToken": {
+      "title": "Consent Token",
+      "type": "object",
+      "properties": {
+        "rideId": { "type": "string" },
+        "consentHash": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "GuardianProfile": {
+      "title": "Guardian Profile",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "verificationLevel": { "$ref": "#/entities/GuardianVerificationLevel" }
+      }
+    },
+    "SystemConfig": {
+      "title": "System Config",
+      "type": "object",
+      "properties": {
+        "region": { "type": "string" },
+        "escalationThresholds": { "type": "object" },
+        "samplingRates": { "type": "object" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profile information."
+    },
+    "/rides/{rideId}": {
+      "schema": { "$ref": "#/entities/Ride" },
+      "description": "Stores information about individual rides."
+    },
+    "/rides/{rideId}/riskEvents/{riskEventId}": {
+        "schema": { "$ref": "#/entities/RiskEvent" },
+        "description": "Stores risk events associated with a ride."
+    },
+    "/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/Alert" },
+      "description": "Stores alerts triggered during rides."
+    },
+    "/deviceLogs/{logId}": {
+        "schema": { "$ref": "#/entities/DeviceLog" },
+        "description": "Logs device status changes."
+    },
+    "/offlineMessages/{messageId}": {
+        "schema": { "$ref": "#/entities/OfflineMessage" },
+        "description": "Stores offline messages."
+    },
+    "/caseLogs/{caseId}": {
+        "schema": { "$ref": "#/entities/CaseLog" },
+        "description": "Logs case management actions."
+    },
+    "/analyticsAggregates/{aggregateId}": {
+        "schema": { "$ref": "#/entities/AnalyticsAggregate" },
+        "description": "Stores aggregated analytics data."
+    },
+    "/auditLogs/{logId}": {
+        "schema": { "$ref": "#/entities/AuditLog" },
+        "description": "Immutable log for all system actions."
+    },
+    "/gestureLogs/{logId}": {
+        "schema": { "$ref": "#/entities/GestureLog" },
+        "description": "Logs gesture-based triggers."
+    },
+    "/incidentLedger/{recordId}": {
+        "schema": { "$ref": "#/entities/IncidentLedger" },
+        "description": "Tamper-proof ledger of incidents."
+    },
+    "/consentTokens/{tokenId}": {
+        "schema": { "$ref": "#/entities/ConsentToken" },
+        "description": "Stores legal consent tokens for rides."
+    },
+    "/guardianProfiles/{profileId}": {
+        "schema": { "$ref": "#/entities/GuardianProfile" },
+        "description": "Stores guardian verification levels."
+    },
+    "/systemConfig/{configId}": {
+        "schema": { "$ref": "#/entities/SystemConfig" },
+        "description": "Stores system-wide configuration."
+    }
+  }
+}

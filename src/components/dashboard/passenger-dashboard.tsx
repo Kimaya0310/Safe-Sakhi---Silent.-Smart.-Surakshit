@@ -14,16 +14,21 @@ export default function PassengerDashboard() {
   const [currentRide, setCurrentRide] = useState<Ride | null>(null);
   const { startRide, endRide: appEndRide } = useAppState();
 
-  const handleStartRide = (startLocation: string, destination: string, isFeelingUnsafe: boolean) => {
+  const handleStartRide = async (startLocation: string, destination: string, isFeelingUnsafe: boolean) => {
     const initialRiskScore = isFeelingUnsafe ? 20 : 0;
-    const newRide = startRide(startLocation, destination, initialRiskScore);
+    const newRide = await startRide(startLocation, destination, initialRiskScore);
     setCurrentRide(newRide);
     setRideState('active');
   };
 
-  const handleEndRide = (ride: Ride) => {
-    appEndRide(ride.rideId);
-    const completedRide = {...ride, status: 'completed', endTime: new Date() }
+  const handleEndRide = async (ride: Ride) => {
+    await appEndRide(ride.rideId);
+    const completedRide: Ride = {
+      ...ride, 
+      status: 'completed', 
+      endTime: new Date(),
+      // In a real app, endTime would be a server-set timestamp.
+    }
     setCurrentRide(completedRide);
     setRideState('completed');
   };

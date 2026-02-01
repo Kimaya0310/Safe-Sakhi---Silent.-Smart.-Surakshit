@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,16 +14,21 @@ export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
 
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [isGestureSosEnabled, setIsGestureSosEnabled] = useState(true);
   const [gestureSensitivity, setGestureSensitivity] = useState<'low' | 'medium' | 'high'>('medium');
 
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+    }
+  }, [user]);
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (!user) return;
-    updateUser({ name });
+    await updateUser({ name });
     // In a real app, you'd also save notification and gesture settings to a backend.
     toast({
       title: 'Settings Saved',

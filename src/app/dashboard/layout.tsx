@@ -37,6 +37,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/utils';
+import FirebaseErrorListener from '@/components/FirebaseErrorListener';
 
 export default function DashboardLayout({
   children,
@@ -90,6 +91,7 @@ export default function DashboardLayout({
 
   return (
     <AppStateProvider>
+      <FirebaseErrorListener />
       <div className="flex min-h-screen w-full bg-muted/40">
         <aside className={`relative z-10 flex-col border-r bg-card transition-all duration-300 ${isSidebarOpen ? 'flex w-64' : 'hidden w-0 md:flex md:w-16'}`}>
           <div className="flex h-16 shrink-0 items-center border-b px-6">

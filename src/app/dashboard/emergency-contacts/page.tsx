@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,13 @@ import { Label } from '@/components/ui/label';
 export default function EmergencyContactsPage() {
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
-  const [contacts, setContacts] = useState<EmergencyContact[]>(user?.emergencyContacts || []);
+  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+
+  useEffect(() => {
+    if (user?.emergencyContacts) {
+      setContacts(user.emergencyContacts);
+    }
+  }, [user]);
 
   const handleContactChange = (index: number, field: 'phone' | 'level', value: string) => {
     const newContacts = [...contacts];
@@ -39,7 +45,7 @@ export default function EmergencyContactsPage() {
     setContacts(newContacts);
   };
   
-  const saveContacts = () => {
+  const saveContacts = async () => {
     if (!user) return;
     const validContacts = contacts.filter(c => c.phone.trim() !== '');
     if (validContacts.length !== contacts.length) {
@@ -51,7 +57,7 @@ export default function EmergencyContactsPage() {
         setContacts(validContacts);
         return;
     }
-    updateUser({ emergencyContacts: validContacts });
+    await updateUser({ emergencyContacts: validContacts });
     toast({
       title: 'Contacts Saved',
       description: 'Your emergency contacts have been updated.',

@@ -42,7 +42,7 @@ const formSchema = z.object({
 
 
 export function SignupForm() {
-  const { login, loading } = useAuth();
+  const { signup, loading } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,9 +57,7 @@ export function SignupForm() {
   const selectedRole = form.watch('role');
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // In a real app, this would be a signup API call.
-    // For the MVP, we'll just log the user in.
-    login(values.email, values.role as UserRole);
+    signup(values.name, values.email, values.password, values.role as UserRole);
   }
 
   return (

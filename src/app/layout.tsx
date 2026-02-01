@@ -4,6 +4,8 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/auth-provider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { initializeFirebase } from '@/firebase/server';
 
 const fontInter = Inter({
   subsets: ['latin'],
@@ -19,6 +21,8 @@ export const metadata: Metadata = {
   title: 'Safe Sakhi – Silent, Smart, Surakshit',
   description: 'A Firebase-powered real-time safety application for women.',
 };
+
+const { firebaseApp, firestore, auth } = initializeFirebase();
 
 export default function RootLayout({
   children,
@@ -39,10 +43,16 @@ export default function RootLayout({
           fontSpaceGrotesk.variable
         )}
       >
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <FirebaseClientProvider
+          firebaseApp={firebaseApp}
+          firestore={firestore}
+          auth={auth}
+        >
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

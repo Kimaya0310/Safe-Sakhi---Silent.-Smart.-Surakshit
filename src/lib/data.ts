@@ -1,6 +1,10 @@
 import type { User, Ride, Alert, AuditLog } from './types';
 import placeholderData from './placeholder-images.json';
 
+// IMPORTANT: This file contains mock data for development and prototyping.
+// With the integration of Firebase, this data is no longer actively used by the application,
+// but is kept for reference and potential fallback testing.
+
 const { placeholderImages } = placeholderData;
 
 export const mockUsers: User[] = [
