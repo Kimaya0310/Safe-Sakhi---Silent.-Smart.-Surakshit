@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useRef, useEffect } from 'react';
 import type { Ride, Alert, AlertStatus, User } from '@/lib/types';
 import { useFirestore, useCollection } from '@/firebase';
 import { useAuth } from './auth-provider';
@@ -24,6 +24,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   
   const { data: rides } = useCollection<Ride>('rides');
   const { data: alerts } = useCollection<Alert>('alerts');
+
+  const alertsRef = useRef(alerts);
+  useEffect(() => {
+    alertsRef.current = alerts;
+  }, [alerts]);
 
 
   const startRide = useCallback(async (startLocation: string, destination: string, initialRiskScore: number = 0): Promise<Ride> => {
@@ -58,7 +63,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     // For this implementation, we assume the current user is the passenger.
     const passenger = user as User; 
     
-    const newAlertData = {
+    const newAlertData: Partial<Alert> = {
       rideId: ride.rideId,
       ride, // Embedding ride snapshot
       passenger, // Embedding passenger snapshot
@@ -66,6 +71,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       triggeredAt: serverTimestamp(),
       status: 'active' as const,
       triggerReason: ride.status === 'emergency' ? 'High Risk Score' : 'Unknown',
+      triggerMethod: 'system',
       deviceInfoSnapshot: {
         os: 'Web Browser',
         appVersion: '1.0.2',
@@ -73,6 +79,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         simStatus: 'Unknown'
       }
     };
+    
+    if (ride.riskEvents.some(e => e.eventType === 'behavior')) {
+      newAlertData.triggerMethod = 'gesture';
+    }
+
     await addDoc(collection(firestore, 'alerts'), newAlertData);
 
   }, [firestore, user]);
@@ -88,12 +99,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     await updateDoc(rideRef, { ...dataToUpdate, lastHeartbeat: serverTimestamp() });
 
     if (updatedRide.status === 'emergency') {
-        const existingAlert = (alerts || []).find(a => a.ride.rideId === updatedRide.rideId);
+        const existingAlert = (alertsRef.current || []).find(a => a.ride.rideId === updatedRide.rideId);
         if (!existingAlert) {
             await createAlert(updatedRide);
         }
     }
-  }, [firestore, createAlert, alerts]);
+  }, [firestore, createAlert]);
 
   const endRide = useCallback(async (rideId: string) => {
     const rideRef = doc(firestore, 'rides', rideId);

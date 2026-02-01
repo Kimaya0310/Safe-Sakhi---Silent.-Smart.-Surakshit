@@ -137,7 +137,7 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
 
   const getStatusInfo = () => {
     if (ride.status === 'emergency') {
-      return { icon: ShieldAlert, color: 'text-red-500', text: 'Emergency', badge: 'destructive', progressColor: 'bg-red-500' };
+      return { icon: ShieldAlert, color: 'text-destructive', text: 'Emergency', badge: 'destructive', progressColor: 'bg-destructive' };
     }
     if (ride.riskScore > 30) {
       return { icon: Shield, color: 'text-yellow-500', text: 'Monitoring', badge: 'secondary', progressColor: 'bg-yellow-500' };
@@ -211,7 +211,7 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
               <p className="text-xs text-muted-foreground">
                 Risk Score: {ride.riskScore}
               </p>
-              <Progress value={ride.riskScore} className="mt-4 h-2 [&>*]:bg-primary" />
+              <Progress value={ride.riskScore} className="mt-4 h-2" indicatorClassName={statusInfo.progressColor} />
             </CardContent>
           </Card>
           
