@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import type { Ride, Alert, AlertStatus, User } from '@/lib/types';
 import { useFirestore, useCollection } from '@/firebase';
 import { useAuth } from './auth-provider';
-import { collection, addDoc, updateDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, serverTimestamp, Timestamp, query, where, getDocs } from 'firebase/firestore';
 
 interface AppStateContextType {
   rides: Ride[];
@@ -14,6 +14,8 @@ interface AppStateContextType {
   endRide: (rideId: string) => Promise<void>;
   createAlert: (ride: Ride) => Promise<void>;
   updateAlert: (updatedAlert: Alert) => Promise<void>;
+  alertsLoading: boolean;
+  ridesLoading: boolean;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -22,14 +24,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const firestore = useFirestore();
   const { user } = useAuth();
   
-  const { data: rides } = useCollection<Ride>('rides');
-  const { data: alerts } = useCollection<Alert>('alerts');
-
-  const alertsRef = useRef(alerts);
-  useEffect(() => {
-    alertsRef.current = alerts;
-  }, [alerts]);
-
+  const { data: rides, loading: ridesLoading } = useCollection<Ride>('rides');
+  const { data: alerts, loading: alertsLoading } = useCollection<Alert>('alerts');
 
   const startRide = useCallback(async (startLocation: string, destination: string, initialRiskScore: number = 0): Promise<Ride> => {
     if (!user) throw new Error("User not authenticated");
@@ -57,6 +53,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   
   const createAlert = useCallback(async (ride: Ride) => {
     if (!user) return;
+
+    // Check if an alert already exists for this ride to prevent duplicates
+    const alertsCollectionRef = collection(firestore, 'alerts');
+    const q = query(alertsCollectionRef, where('rideId', '==', ride.rideId));
+    const existingAlertsSnapshot = await getDocs(q);
+
+    if (!existingAlertsSnapshot.empty) {
+        console.log(`Alert already exists for ride ${ride.rideId}.`);
+        return; // Exit if an alert for this ride already exists
+    }
+    
     // We need the full user object for the passenger field.
     // The user from useAuth might not be the passenger in all cases,
     // so in a real app you might fetch the passenger profile here.
@@ -99,10 +106,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     await updateDoc(rideRef, { ...dataToUpdate, lastHeartbeat: serverTimestamp() });
 
     if (updatedRide.status === 'emergency') {
-        const existingAlert = (alertsRef.current || []).find(a => a.ride.rideId === updatedRide.rideId);
-        if (!existingAlert) {
-            await createAlert(updatedRide);
-        }
+        // The check for existing alerts is now handled inside createAlert
+        await createAlert(updatedRide);
     }
   }, [firestore, createAlert]);
 
@@ -118,7 +123,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, [firestore]);
 
 
-  const value = { rides: rides || [], alerts: alerts || [], startRide, updateRide, endRide, createAlert, updateAlert };
+  const value = { 
+      rides: rides || [], 
+      alerts: alerts || [], 
+      startRide, 
+      updateRide, 
+      endRide, 
+      createAlert, 
+      updateAlert,
+      alertsLoading,
+      ridesLoading,
+    };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

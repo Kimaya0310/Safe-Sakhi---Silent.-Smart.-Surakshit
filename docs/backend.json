@@ -16,7 +16,8 @@
         },
         "organization": { "type": "string" },
         "verified": { "type": "boolean" },
-        "avatarUrl": { "type": "string" }
+        "avatarUrl": { "type": "string" },
+        "consentToMonitoring": { "type": "boolean" }
       },
       "required": ["name", "email", "role"]
     },

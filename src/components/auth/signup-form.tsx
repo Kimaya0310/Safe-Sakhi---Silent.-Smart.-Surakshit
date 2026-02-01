@@ -34,7 +34,7 @@ const formSchema = z.object({
   role: z.enum(['passenger', 'responder', 'authority'], {
     required_error: 'Please select a role.',
   }),
-  consentToMonitoring: z.boolean().optional(),
+  consentToMonitoring: z.boolean().default(false),
 }).refine(data => data.role !== 'passenger' || data.consentToMonitoring === true, {
   message: "You must consent to monitoring to sign up as a passenger.",
   path: ["consentToMonitoring"],
@@ -51,13 +51,14 @@ export function SignupForm() {
       email: '',
       password: '',
       role: 'passenger',
+      consentToMonitoring: false,
     },
   });
 
   const selectedRole = form.watch('role');
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    signup(values.name, values.email, values.password, values.role as UserRole);
+    signup(values.name, values.email, values.password, values.role as UserRole, values.consentToMonitoring);
   }
 
   return (

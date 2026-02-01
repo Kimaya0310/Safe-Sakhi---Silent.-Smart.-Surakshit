@@ -20,7 +20,7 @@ interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   login: (email: string, password: string, role: UserRole) => Promise<void>;
-  signup: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
+  signup: (name: string, email: string, password: string, role: UserRole, consentToMonitoring?: boolean) => Promise<void>;
   logout: () => void;
   loading: boolean;
   updateUser: (updatedUser: Partial<User>) => Promise<void>;
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (name: string, email: string, password: string, role: UserRole) => {
+  const signup = async (name: string, email: string, password: string, role: UserRole, consentToMonitoring?: boolean) => {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -101,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role,
         avatarUrl: `https://picsum.photos/seed/${userCredential.user.uid}/200`,
         emergencyContacts: [],
+        consentToMonitoring: role === 'passenger' ? consentToMonitoring : undefined,
       };
       await setDoc(doc(firestore, 'users', userCredential.user.uid), newUser);
       setUser({ id: userCredential.user.uid, ...newUser });

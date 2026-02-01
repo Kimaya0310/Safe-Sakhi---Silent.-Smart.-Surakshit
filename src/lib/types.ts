@@ -19,6 +19,7 @@ export interface User {
   organization?: string;
   verified?: boolean;
   avatarUrl: string;
+  consentToMonitoring?: boolean;
 };
 
 export type Ride = {
