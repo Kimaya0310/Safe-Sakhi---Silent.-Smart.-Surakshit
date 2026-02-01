@@ -6,24 +6,6 @@ import { useFirestore, useCollection } from '@/firebase';
 import { useAuth } from './auth-provider';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
-// Helper to convert Firestore Timestamps to JS Dates
-const convertTimestamps = (data: any) => {
-  if (!data) return data;
-  const converted: { [key: string]: any } = {};
-  for (const key in data) {
-    if (data[key] instanceof Timestamp) {
-      converted[key] = data[key].toDate();
-    } else if (typeof data[key] === 'object' && data[key] !== null && !Array.isArray(data[key])) {
-      converted[key] = convertTimestamps(data[key]);
-    }
-    else {
-      converted[key] = data[key];
-    }
-  }
-  return converted;
-}
-
-
 interface AppStateContextType {
   rides: Ride[];
   alerts: Alert[];
@@ -40,11 +22,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const firestore = useFirestore();
   const { user } = useAuth();
   
-  const { data: ridesData } = useCollection(collection(firestore, 'rides'));
-  const { data: alertsData } = useCollection(collection(firestore, 'alerts'));
-
-  const rides: Ride[] = ridesData?.map(r => ({ rideId: r.id, ...convertTimestamps(r) })) || [];
-  const alerts: Alert[] = alertsData?.map(a => ({ alertId: a.id, ...convertTimestamps(a) })) || [];
+  const { data: rides } = useCollection<Ride>('rides');
+  const { data: alerts } = useCollection<Alert>('alerts');
 
 
   const startRide = useCallback(async (startLocation: string, destination: string, initialRiskScore: number = 0): Promise<Ride> => {
@@ -65,7 +44,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const newRide: Ride = {
       rideId: rideRef.id,
       ...newRideData,
-      startTime: new Date(),
+      startTime: new Date(), // Use local time as an estimate until server timestamp is processed
       lastHeartbeat: new Date(),
     }
     return newRide;
@@ -73,7 +52,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   
   const createAlert = useCallback(async (ride: Ride) => {
     if (!user) return;
-    const passenger = user as User;
+    // We need the full user object for the passenger field.
+    // The user from useAuth might not be the passenger in all cases,
+    // so in a real app you might fetch the passenger profile here.
+    // For this implementation, we assume the current user is the passenger.
+    const passenger = user as User; 
     
     const newAlertData = {
       rideId: ride.rideId,
@@ -97,10 +80,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const updateRide = useCallback(async (updatedRide: Ride) => {
     const { rideId, ...rideData } = updatedRide;
     const rideRef = doc(firestore, 'rides', rideId);
-    await updateDoc(rideRef, { ...rideData, lastHeartbeat: serverTimestamp() });
+    // Remove client-side date objects before sending to firestore
+    const dataToUpdate = { ...rideData };
+    delete (dataToUpdate as any).startTime;
+    delete (dataToUpdate as any).endTime;
+
+    await updateDoc(rideRef, { ...dataToUpdate, lastHeartbeat: serverTimestamp() });
+
     if (updatedRide.status === 'emergency') {
-        // Here you might want to check if an alert already exists for this ride
-        const existingAlert = alerts.find(a => a.ride.rideId === updatedRide.rideId);
+        const existingAlert = (alerts || []).find(a => a.ride.rideId === updatedRide.rideId);
         if (!existingAlert) {
             await createAlert(updatedRide);
         }
@@ -119,7 +107,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, [firestore]);
 
 
-  const value = { rides, alerts, startRide, updateRide, endRide, createAlert, updateAlert };
+  const value = { rides: rides || [], alerts: alerts || [], startRide, updateRide, endRide, createAlert, updateAlert };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

@@ -14,7 +14,6 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers } from '@/lib/data';
 
 interface AuthContextType {
   user: User | null;
@@ -78,13 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login Failed",
         description: error.message || "An unknown error occurred.",
       });
-      // Fallback for demo purposes
-      const fallbackUser = mockUsers.find((u) => u.role === role);
-      if(fallbackUser) {
-        setUser(fallbackUser);
-        router.push('/dashboard');
-      }
-
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react';
-import { onSnapshot, query, collection, where, getDocs, type Query, type DocumentData, type QueryConstraint } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { onSnapshot, query, collection, type QueryConstraint } from 'firebase/firestore';
 import { useFirestore } from '../provider';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '../errors';
+import { convertTimestamps } from '@/lib/utils';
 
 interface UseCollectionOptions {
   constraints?: QueryConstraint[];
@@ -30,14 +31,15 @@ export function useCollection<T>(
       (snapshot) => {
         const result: T[] = [];
         snapshot.forEach((doc) => {
-          result.push({ id: doc.id, ...doc.data() } as T);
+          const docData = { id: doc.id, ...doc.data() };
+          result.push(convertTimestamps(docData) as T);
         });
         setData(result);
         setLoading(false);
       },
       async (err) => {
         const permissionError = new FirestorePermissionError({
-          path: q.path,
+          path: (q as any).path, // Internal property, use with caution
           operation: 'list',
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);

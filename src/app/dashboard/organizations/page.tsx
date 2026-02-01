@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { UserPlus } from 'lucide-react';
@@ -8,17 +7,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getInitials } from '@/lib/utils';
-import { mockUsers } from '@/lib/data';
+import { useCollection } from '@/firebase';
+import type { User } from '@/lib/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 export default function OrganizationsPage() {
-  const members = mockUsers.filter(u => u.organization);
+  const { data: users, loading } = useCollection<User>('users');
+  const members = users?.filter(u => u.organization) || [];
   const { toast } = useToast();
 
   const handleAddMember = () => {
+    // This is a simulation. In a real app, this would trigger a backend function.
     toast({
         title: "Member Invited",
         description: "An invitation has been sent to the new member (simulation).",
@@ -73,12 +77,28 @@ export default function OrganizationsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {members.map(member => (
+            {loading && Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div>
+                                <Skeleton className="h-4 w-24 mb-1" />
+                                <Skeleton className="h-3 w-32" />
+                            </div>
+                        </div>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                </TableRow>
+            ))}
+            {!loading && members.map(member => (
               <TableRow key={member.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar>
-                      <AvatarImage src={member.avatarUrl} alt={member.name} />
+                      <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person face" />
                       <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -96,6 +116,11 @@ export default function OrganizationsPage() {
                 </TableCell>
               </TableRow>
             ))}
+            {!loading && members.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">No members found.</TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

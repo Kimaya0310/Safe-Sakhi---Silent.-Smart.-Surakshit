@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { doc, onSnapshot, type DocumentData } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { useFirestore } from '../provider';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '../errors';
+import { convertTimestamps } from '@/lib/utils';
 
 export function useDoc<T>(
   path: string
@@ -26,7 +27,8 @@ export function useDoc<T>(
       docRef,
       (doc) => {
         if (doc.exists()) {
-          setData({ id: doc.id, ...doc.data() } as T);
+          const docData = { id: doc.id, ...doc.data() };
+          setData(convertTimestamps(docData) as T);
         } else {
           setData(null);
         }
