@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role,
         avatarUrl: `https://picsum.photos/seed/${userCredential.user.uid}/200`,
         emergencyContacts: [],
-        consentToMonitoring: role === 'passenger' ? consentToMonitoring : undefined,
+        ...(role === 'passenger' && { consentToMonitoring: consentToMonitoring }),
       };
       await setDoc(doc(firestore, 'users', userCredential.user.uid), newUser);
       setUser({ id: userCredential.user.uid, ...newUser });
