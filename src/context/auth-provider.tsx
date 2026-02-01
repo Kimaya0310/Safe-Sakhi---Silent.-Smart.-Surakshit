@@ -101,17 +101,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role,
         avatarUrl: `https://picsum.photos/seed/${userCredential.user.uid}/200`,
         emergencyContacts: [],
-        ...(role === 'passenger' && { consentToMonitoring: consentToMonitoring }),
       };
+      
+      if (role === 'passenger') {
+        newUser.consentToMonitoring = consentToMonitoring;
+      }
+
       await setDoc(doc(firestore, 'users', userCredential.user.uid), newUser);
       setUser({ id: userCredential.user.uid, ...newUser });
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
+      let description = "Could not create account.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "This email is already registered. Please try logging in or use a different email address.";
+      } else {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: error.message || "Could not create account.",
+        description: description,
       });
     } finally {
       setLoading(false);
