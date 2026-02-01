@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name,
         email,
         role,
-        avatarUrl: `https://picsum.photos/seed/${'userCredential.user.uid'}/200`,
+        avatarUrl: `https://picsum.photos/seed/${userCredential.user.uid}/200`,
         emergencyContacts: [],
       };
       await setDoc(doc(firestore, 'users', userCredential.user.uid), newUser);
