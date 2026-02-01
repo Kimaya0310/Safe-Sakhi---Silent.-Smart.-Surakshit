@@ -14,6 +14,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { convertTimestamps } from '@/lib/utils';
 
 interface AuthContextType {
   user: User | null;
@@ -43,7 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setFirebaseUser(fbUser);
         const userDoc = await getDoc(doc(firestore, 'users', fbUser.uid));
         if (userDoc.exists()) {
-          setUser({ id: userDoc.id, ...userDoc.data() } as User);
+          const userData = convertTimestamps({ id: userDoc.id, ...userDoc.data() });
+          setUser(userData as User);
         }
       } else {
         setFirebaseUser(null);
@@ -62,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDoc = await getDoc(doc(firestore, 'users', userCredential.user.uid));
 
       if (userDoc.exists() && userDoc.data().role === role) {
-        setUser({ id: userDoc.id, ...userDoc.data() } as User);
+        const userData = convertTimestamps({ id: userDoc.id, ...userDoc.data() });
+        setUser(userData as User);
         router.push('/dashboard');
       } else if (userDoc.exists()) {
         throw new Error(`You are not registered as a ${role}.`);
@@ -72,10 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error: any) {
       console.error("Login error:", error);
+      let description = "An unknown error occurred.";
+      if (error.code === 'auth/invalid-credential') {
+        description = "The email or password you entered is incorrect. Please double-check your credentials or sign up for a new account.";
+      } else {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "An unknown error occurred.",
+        description: description,
       });
     } finally {
       setLoading(false);
@@ -90,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name,
         email,
         role,
-        avatarUrl: `https://picsum.photos/seed/${userCredential.user.uid}/200`,
+        avatarUrl: `https://picsum.photos/seed/${'userCredential.user.uid'}/200`,
         emergencyContacts: [],
       };
       await setDoc(doc(firestore, 'users', userCredential.user.uid), newUser);
