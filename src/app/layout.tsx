@@ -43,16 +43,32 @@ export default function RootLayout({
           fontSpaceGrotesk.variable
         )}
       >
-        <FirebaseClientProvider
-          firebaseApp={firebaseApp}
-          firestore={firestore}
-          auth={auth}
-        >
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </FirebaseClientProvider>
+        {firebaseApp && auth && firestore ? (
+          <FirebaseClientProvider
+            firebaseApp={firebaseApp}
+            firestore={firestore}
+            auth={auth}
+          >
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </FirebaseClientProvider>
+        ) : (
+          <div className="flex h-screen w-full items-center justify-center p-4">
+            <div className="w-full max-w-lg rounded-lg border border-destructive bg-card p-8 text-center shadow-2xl">
+              <h1 className="font-headline text-2xl font-bold text-destructive">
+                Firebase Configuration Missing
+              </h1>
+              <p className="mt-2 text-muted-foreground">
+                The application cannot start because it is not configured to connect to Firebase.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Please ensure your Firebase project configuration variables (e.g., API Key, Project ID) are correctly set up in your environment.
+              </p>
+            </div>
+          </div>
+        )}
       </body>
     </html>
   );

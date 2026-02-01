@@ -1,9 +1,22 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
-export function initializeFirebase() {
+interface FirebaseInstances {
+  firebaseApp: FirebaseApp | null;
+  auth: Auth | null;
+  firestore: Firestore | null;
+}
+
+export function initializeFirebase(): FirebaseInstances {
+  if (!firebaseConfig.apiKey) {
+    console.warn(
+      'Firebase API Key is missing. The app cannot connect to Firebase and will not function correctly.'
+    );
+    return { firebaseApp: null, auth: null, firestore: null };
+  }
+
   const firebaseApp = !getApps().length
     ? initializeApp(firebaseConfig)
     : getApp();
