@@ -8,11 +8,11 @@ import AlertDetailsView from './shared/alert-details-view';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function AuthorityDashboard() {
-  const { alerts } = useAppState();
+  const { alerts, alertsLoading } = useAppState();
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   
-  const openCases = alerts.filter(a => a.status === 'active' || a.status === 'acknowledged' || a.status === 'in-progress');
-  const closedCases = alerts.filter(a => a.status === 'resolved' || a.status === 'closed');
+  const openCases = (alerts || []).filter(a => a.status === 'active' || a.status === 'acknowledged' || a.status === 'in-progress');
+  const closedCases = (alerts || []).filter(a => a.status === 'resolved' || a.status === 'closed');
 
   const handleSelectAlert = (alert: Alert) => {
     setSelectedAlert(alert);
@@ -33,10 +33,10 @@ export default function AuthorityDashboard() {
         <TabsTrigger value="closed">Closed Cases</TabsTrigger>
       </TabsList>
       <TabsContent value="open">
-        <AlertsView alerts={openCases} onSelectAlert={handleSelectAlert} title="Open Emergency Cases" />
+        <AlertsView alerts={openCases} onSelectAlert={handleSelectAlert} title="Open Emergency Cases" loading={alertsLoading} />
       </TabsContent>
       <TabsContent value="closed">
-        <AlertsView alerts={closedCases} onSelectAlert={handleSelectAlert} title="Closed Cases" />
+        <AlertsView alerts={closedCases} onSelectAlert={handleSelectAlert} title="Closed Cases" loading={alertsLoading} />
       </TabsContent>
     </Tabs>
   );

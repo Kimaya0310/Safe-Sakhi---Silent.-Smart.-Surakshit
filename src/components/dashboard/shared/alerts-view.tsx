@@ -5,14 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AlertsViewProps {
   alerts: Alert[];
   onSelectAlert: (alert: Alert) => void;
   title: string;
+  loading?: boolean;
 }
 
-export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewProps) {
+export default function AlertsView({ alerts, onSelectAlert, title, loading }: AlertsViewProps) {
 
   const getBadgeVariant = (status: Alert['status']) => {
     switch(status) {
@@ -32,9 +34,11 @@ export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewP
       <CardHeader>
         <CardTitle className="font-headline">{title}</CardTitle>
         <CardDescription>
-          {alerts.length > 0 
-            ? 'Select a case to view details. Cases are sorted by risk score.'
-            : 'No cases to show at this time.'
+          {loading 
+            ? 'Loading cases...' 
+            : alerts.length > 0 
+              ? 'Select a case to view details. Cases are sorted by risk score.'
+              : 'No cases to show at this time.'
           }
         </CardDescription>
       </CardHeader>
@@ -49,7 +53,15 @@ export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewP
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedAlerts.length > 0 ? sortedAlerts.map((alert) => (
+            {loading && Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+              </TableRow>
+            ))}
+            {!loading && sortedAlerts.length > 0 ? sortedAlerts.map((alert) => (
               <TableRow key={alert.alertId} onClick={() => onSelectAlert(alert)} className="cursor-pointer">
                 <TableCell className="font-medium">{alert.passenger.name}</TableCell>
                 <TableCell>
@@ -60,7 +72,8 @@ export default function AlertsView({ alerts, onSelectAlert, title }: AlertsViewP
                   <Badge variant={getBadgeVariant(alert.status)} className="capitalize">{alert.status.replace('-', ' ')}</Badge>
                 </TableCell>
               </TableRow>
-            )) : (
+            )) : null}
+             {!loading && sortedAlerts.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground">No alerts found.</TableCell>
                 </TableRow>
