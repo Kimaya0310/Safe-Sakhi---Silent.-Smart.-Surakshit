@@ -35,6 +35,12 @@ export type Ride = {
   deviceStatus?: 'online' | 'offline' | 'poweredOff';
   lastHeartbeat?: Date;
   tamperingFlag?: boolean;
+  forensics?: {
+    lastKnownLocation: string;
+    lastNetworkStatus: string;
+    lastBatteryPercentage: number;
+    lastUserInteraction: Date;
+  };
 };
 
 export type RiskEvent = {

@@ -98,7 +98,23 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
     // Confidence-weighted confirmation: doesn't fully reset risk
     setRide(currentRide => ({
         ...currentRide,
+        riskScore: Math.max(0, currentRide.riskScore - 20)
+    }));
+    setShowDeviationAlert(false);
+  };
+  
+  const handleFalseTrigger = () => {
+    setRide(currentRide => ({
+        ...currentRide,
         riskScore: Math.max(0, currentRide.riskScore - 15)
+    }));
+    setShowDeviationAlert(false);
+  };
+
+  const handleRouteChange = () => {
+    setRide(currentRide => ({
+        ...currentRide,
+        riskScore: Math.max(0, currentRide.riskScore - 10)
     }));
     setShowDeviationAlert(false);
   };
@@ -106,7 +122,7 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   const handleUnsafeConfirmation = () => {
       setRide(currentRide => ({
         ...currentRide,
-        riskScore: currentRide.riskScore + 20,
+        riskScore: currentRide.riskScore + 30,
       }));
       setShowDeviationAlert(false);
   };
@@ -261,10 +277,12 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
               If you don't respond, your risk level will be escalated.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleUnsafeConfirmation}>I'm Not Safe</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSafeConfirmation}>Yes, I am Safe</AlertDialogAction>
-          </AlertDialogFooter>
+           <div className="flex flex-col gap-2 py-4">
+              <Button onClick={handleSafeConfirmation}>Yes, I am safe</Button>
+              <Button variant="secondary" onClick={handleFalseTrigger}>This was a false alarm</Button>
+              <Button variant="secondary" onClick={handleRouteChange}>My route changed intentionally</Button>
+              <Button variant="destructive" onClick={handleUnsafeConfirmation}>I am not safe</Button>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </>

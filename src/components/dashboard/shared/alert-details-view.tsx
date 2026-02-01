@@ -3,7 +3,7 @@
 import type { Alert } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info, Download, Send, Hand } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, Clock, ShieldAlert, Info, Download, Send, Hand, UserCheck, UserX } from 'lucide-react';
 import Image from 'next/image';
 import placeholderData from '@/lib/placeholder-images.json';
 import { useAuth } from '@/context/auth-provider';
@@ -43,6 +43,19 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
         description: "A PDF report is being generated for this case (simulation).",
     });
   }
+  
+  const handleAcceptAlert = () => {
+    if (!user) return;
+    updateAlert({
+        ...alert,
+        status: 'acknowledged',
+        assignedOfficer: user.name,
+    });
+    toast({
+        title: "Alert Accepted",
+        description: `You have been assigned to case ${alert.alertId}.`,
+    });
+  };
 
   const isGestureSos = alert.triggerMethod === 'gesture';
 
@@ -124,6 +137,18 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
                   </div>
                 )}
                 <Separator />
+                {alert.assignedOfficer ? (
+                    <div className="flex items-center gap-3">
+                        <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        <span>Assigned To: <span className="font-medium">{alert.assignedOfficer}</span></span>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-3">
+                        <UserX className="h-4 w-4 text-muted-foreground" />
+                        <span>Assigned To: <span className="font-medium">Unassigned</span></span>
+                    </div>
+                )}
+                <Separator />
                 <div className="flex items-start gap-3">
                     <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
@@ -136,6 +161,17 @@ export default function AlertDetailsView({ alert, onBack, isAuthority = false }:
            
            {!isAuthority && user?.role === 'responder' && (
             <>
+              {alert.status === 'active' && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>New Alert</CardTitle>
+                        <CardDescription>Acknowledge and accept this case to proceed.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className="w-full" onClick={handleAcceptAlert}>Accept Alert</Button>
+                    </CardContent>
+                </Card>
+              )}
               <QuickActions />
               <Card>
                 <CardHeader>
