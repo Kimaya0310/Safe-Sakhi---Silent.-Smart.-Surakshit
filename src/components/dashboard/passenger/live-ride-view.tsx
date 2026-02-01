@@ -38,6 +38,7 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
   const [fakeCall, setFakeCall] = useState<{name: string, type: 'Family' | 'Friend' | 'Authority'} | null>(null);
 
   const mapPlaceholder = placeholderData.placeholderImages.find(p => p.id === 'map-placeholder');
+  const mapImageUrl = `https://picsum.photos/seed/${ride.destination.replace(/[^a-zA-Z0-9]/g, '')}/1200/800`;
 
   useEffect(() => {
     const rideInterval = setInterval(() => {
@@ -174,18 +175,17 @@ export default function LiveRideView({ ride: initialRide, onEndRide }: LiveRideV
                 </div>
             </CardHeader>
             <CardContent>
-              {mapPlaceholder && (
-                <div className="aspect-video w-full overflow-hidden rounded-lg border">
-                  <Image
-                    src={mapPlaceholder.imageUrl}
-                    alt={mapPlaceholder.description}
-                    width={1200}
-                    height={800}
-                    className="h-full w-full object-cover"
-                    data-ai-hint={mapPlaceholder.imageHint}
-                  />
-                </div>
-              )}
+              <div className="aspect-video w-full overflow-hidden rounded-lg border">
+                <Image
+                  src={mapImageUrl}
+                  alt={mapPlaceholder?.description || `Map for ride to ${ride.destination}`}
+                  width={1200}
+                  height={800}
+                  className="h-full w-full object-cover"
+                  data-ai-hint={mapPlaceholder?.imageHint || "map route"}
+                  key={ride.rideId}
+                />
+              </div>
             </CardContent>
             <CardFooter>
                 <div className="w-full space-y-2">
