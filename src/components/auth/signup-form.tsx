@@ -26,6 +26,7 @@ import { useAuth } from '@/context/auth-provider';
 import type { UserRole } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -56,6 +57,13 @@ export function SignupForm() {
   });
 
   const selectedRole = form.watch('role');
+
+  useEffect(() => {
+    if (selectedRole !== 'passenger') {
+      form.setValue('consentToMonitoring', false, { shouldValidate: true });
+    }
+  }, [selectedRole, form]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     signup(values.name, values.email, values.password, values.role as UserRole, values.consentToMonitoring);
