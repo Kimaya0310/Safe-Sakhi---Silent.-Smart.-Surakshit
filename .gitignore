@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -15,7 +13,7 @@
 
 # next.js
 /.next/
-/out/
+ /out/
 
 # production
 /build
@@ -37,9 +35,36 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# genkit / ai
 .genkit/*
-.env*
+*prompt*
+*.ai
+notes/
+drafts/
+
+# environment & secrets
+.env
+.env.*
+*.key
+*.secret
+*.crt
+*.p12
+serviceAccountKey.json
 
 # firebase
+.firebase/
+firebaserc
 firebase-debug.log
 firestore-debug.log
+firebase.json.bak
+
+# mobile (future-safe)
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# cache & temp
+*.cache
+.offline/
+tmp/
+temp/
